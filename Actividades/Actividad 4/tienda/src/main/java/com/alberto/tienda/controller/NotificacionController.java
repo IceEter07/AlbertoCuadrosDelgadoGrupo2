@@ -16,12 +16,12 @@ public class NotificacionController {
     private NotificacionService notificacionService;
 
     @GetMapping("/obtenerNotificaciones")
-    public List<NotificacionDto> getNotificacion(){
+    public List<NotificacionDto> getNotification(){
         return notificacionService.getNotificaciones();
     }
 
-    @PostMapping("/guardarNotifiacion")
-    public NotificacionDto guardarNotificacion(@RequestBody NotificacionDto dto){
+    @PostMapping("/guardarNotificacion")
+    public NotificacionDto saveNotification(@RequestBody NotificacionDto dto){
         return notificacionService.guardarNotificacion(dto);
     }
 }

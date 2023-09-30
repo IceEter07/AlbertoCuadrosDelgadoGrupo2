@@ -27,9 +27,6 @@ public class DetalleCarrito {
     @Column(name = "precio", nullable = false, precision = 11, scale = 2)
     private BigDecimal precio;
 
-    @Column(name = "costo_envio", nullable = false, precision = 11, scale = 2)
-    private BigDecimal costoEnvio;
-
-    @Column(name = "descuento", nullable = false, precision = 11, scale = 2)
-    private BigDecimal descuento;
+    @Column(name = "total", nullable = false, precision = 11, scale = 2)
+    private BigDecimal total;
 }
