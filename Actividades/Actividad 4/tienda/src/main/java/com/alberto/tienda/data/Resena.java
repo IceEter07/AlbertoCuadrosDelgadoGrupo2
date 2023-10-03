@@ -13,7 +13,7 @@ import java.util.Date;
 public class Resena {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_resena", nullable = false)
+    @Column(name = "id_resenas", nullable = false)
     private Integer idResena;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -23,10 +23,6 @@ public class Resena {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "productos_id_producto", nullable = false)
     private Producto idProducto;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "tiendas_id_tienda", nullable = false)
-    private Tienda idTienda;
 
     @Column(name = "comentario")
     private String comentario;
