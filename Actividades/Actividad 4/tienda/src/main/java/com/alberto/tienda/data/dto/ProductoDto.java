@@ -10,9 +10,10 @@ import java.math.BigDecimal;
 public class ProductoDto {
     private Integer id;
     private int idCategoria;
+    private int idTienda;
     private String codigo;
     private String nombre;
-    private BigDecimal precio;
+    private Float precio;
     private Integer numeroProductos;
     private String descripcion;
 

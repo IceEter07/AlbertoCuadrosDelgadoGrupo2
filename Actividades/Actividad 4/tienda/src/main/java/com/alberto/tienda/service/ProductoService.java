@@ -2,9 +2,11 @@ package com.alberto.tienda.service;
 
 import com.alberto.tienda.data.Categoria;
 import com.alberto.tienda.data.Producto;
+import com.alberto.tienda.data.Tienda;
 import com.alberto.tienda.data.dto.ProductoDto;
 import com.alberto.tienda.repository.CategoriaRepository;
 import com.alberto.tienda.repository.ProductoRepository;
+import com.alberto.tienda.repository.TiendaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,11 +22,17 @@ public class ProductoService {
     @Autowired
     CategoriaRepository categoriaRepository;
 
+    @Autowired
+    TiendaRepository tiendaRepository;
+
     public ProductoDto guardarProducto(ProductoDto productoDto){
         Producto nuevoProducto = new Producto();
         //Guardar el Id de la categoria (FK)
         Categoria category = buscarCategoriaPorId(productoDto.getIdCategoria());
         nuevoProducto.setIdCategoria(category);
+        //Guardar el ID de la tiena (FK)
+        Tienda shop = buscarTiendaPorId(productoDto.getIdTienda());
+        nuevoProducto.setIdTienda(shop);
         nuevoProducto.setCodigo(productoDto.getCodigo());
         nuevoProducto.setNombre(productoDto.getNombre());
         nuevoProducto.setPrecioVenta(productoDto.getPrecio());
@@ -42,6 +50,11 @@ public class ProductoService {
         return category;
     }
 
+    private Tienda buscarTiendaPorId(int idTienda){
+        Tienda shop = tiendaRepository.getReferenceById(idTienda);
+        return shop;
+    }
+
     public List<ProductoDto> getProductos(){
         List<ProductoDto> listaProductos = new ArrayList<>();
 
@@ -51,6 +64,9 @@ public class ProductoService {
             //Id de la categoria (FK)
             Categoria idCategoria = product.getIdCategoria();
             productoDto.setIdCategoria(idCategoria.getIdCategoria());
+            //ID de la tienda (FK)
+            Tienda idTienda = product.getIdTienda();
+            productoDto.setIdTienda(idTienda.getIdTienda());
             productoDto.setCodigo(product.getCodigo());
             productoDto.setPrecio(product.getPrecioVenta());
             productoDto.setNumeroProductos(productoDto.getNumeroProductos());

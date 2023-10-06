@@ -3,15 +3,14 @@ package com.alberto.tienda.data.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-
 @Getter
 @Setter
-public class CarritoDto {
+public class CategoriaDto {
     private Integer id;
-    private int idUsuario;
-    private Float total;
+    private String nombre;
+    private String descripcion;
 
-    public  CarritoDto(){
+    public CategoriaDto(){
 
     }
 }

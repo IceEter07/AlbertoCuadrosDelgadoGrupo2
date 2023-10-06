@@ -1,8 +1,12 @@
 package com.alberto.tienda.service;
 
 import com.alberto.tienda.data.Tienda;
+import com.alberto.tienda.data.Usuario;
+import com.alberto.tienda.data.UsuarioTienda;
 import com.alberto.tienda.data.dto.TiendaDto;
 import com.alberto.tienda.repository.TiendaRepository;
+import com.alberto.tienda.repository.UsuarioRepository;
+import com.alberto.tienda.repository.UsuarioTiendaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,14 +19,35 @@ public class TiendaService {
     @Autowired
     TiendaRepository tiendaRepository;
 
+    @Autowired
+    UsuarioRepository usuarioRepository;
+
+    @Autowired
+    UsuarioTiendaRepository usuarioTiendaRepository;
+
     public TiendaDto guardarTienda(TiendaDto tiendaDto){
         Tienda nuevaTienda = new Tienda();
+        Usuario idUsuario = usuarioRepository.getReferenceById(tiendaDto.getIdUsuario());
+        nuevaTienda.setIdUsuario(idUsuario);
         nuevaTienda.setRfc(tiendaDto.getRfc());
         nuevaTienda.setNombre(tiendaDto.getNombre());
         nuevaTienda.setDescripcion(tiendaDto.getDescripcion());
         nuevaTienda.setRating(tiendaDto.getRating());
-        tiendaRepository.save(nuevaTienda);
+        nuevaTienda = tiendaRepository.save(nuevaTienda);
         tiendaDto.setId(nuevaTienda.getIdTienda());
+
+        //Codigo que servía para actualizar la tabla de enlace (Actualmente se optó por eliminarla)
+//        //for (UsuarioTiendaDto userShopDto: tiendaDto.getUsuario_tienda()){
+//            UsuarioTienda nuevoUsuarioTienda = new UsuarioTienda();
+//            Usuario userBd = usuarioRepository.getReferenceById(tiendaDto.getIdUsuario());
+//            nuevoUsuarioTienda.setIdUsuario(userBd);
+//            nuevoUsuarioTienda.setIdTienda(nuevaTienda);
+//
+//            usuarioTiendaRepository.save(nuevoUsuarioTienda);
+//        //}
+
+        //Nota: en la petición se obervan los campos de la tabla usuarios_tienda
+
         return tiendaDto;
     }
 

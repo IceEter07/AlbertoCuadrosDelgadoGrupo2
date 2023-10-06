@@ -24,7 +24,7 @@ public class CarritoService {
         Usuario user = buscarUsuarioPorId(carritoDto.getIdUsuario());
         nuevoCarrito.setIdUsuario(user);
         nuevoCarrito.setTotal(carritoDto.getTotal());
-        nuevoCarrito.setEstado(carritoDto.getEstado());
+        nuevoCarrito.setEstado(true);
 
         carritoRepository.save(nuevoCarrito);
         carritoDto.setId(nuevoCarrito.getIdCarrito());
@@ -46,7 +46,6 @@ public class CarritoService {
             Usuario idUsuario = car.getIdUsuario();
             carritoDto.setIdUsuario(idUsuario.getId());
             carritoDto.setTotal(car.getTotal());
-            carritoDto.setEstado(car.getEstado());
 
             listaCarritos.add(carritoDto);
         }

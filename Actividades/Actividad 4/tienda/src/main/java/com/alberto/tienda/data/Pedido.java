@@ -29,7 +29,7 @@ public class Pedido {
     @JoinColumn(name = "metodos_pago_id_pago", nullable = false)
     private MetodoPago idMetodoPago;
 
-    @Column(name = "fecha", nullable = false)
+    @Column(name = "fecha_pedido", nullable = false)
     private Date fechaPedido;
 
     @Column(name = "impuesto", nullable = false, precision = 4, scale = 2)
@@ -38,6 +38,6 @@ public class Pedido {
     @Column(name = "total", nullable = false, precision = 11, scale = 2)
     private BigDecimal total;
 
-    @Column(name = "estado", nullable = false, length = 20)
+    @Column(name = "isActive", nullable = false, length = 20)
     private String estado;
 }
