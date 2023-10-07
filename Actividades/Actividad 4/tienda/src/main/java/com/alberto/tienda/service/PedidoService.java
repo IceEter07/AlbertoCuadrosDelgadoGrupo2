@@ -1,14 +1,8 @@
 package com.alberto.tienda.service;
 
-import com.alberto.tienda.data.Direccion;
-import com.alberto.tienda.data.MetodoPago;
-import com.alberto.tienda.data.Pedido;
-import com.alberto.tienda.data.Usuario;
+import com.alberto.tienda.data.*;
 import com.alberto.tienda.data.dto.PedidoDto;
-import com.alberto.tienda.repository.DireccionRepository;
-import com.alberto.tienda.repository.MetodoPagoRepository;
-import com.alberto.tienda.repository.PedidoRepository;
-import com.alberto.tienda.repository.UsuarioRepository;
+import com.alberto.tienda.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,45 +26,70 @@ public class PedidoService {
     @Autowired
     MetodoPagoRepository metodoPagoRepository;
 
-    public PedidoDto savePedido(PedidoDto pedidoDto){
-        Pedido nuevoPedido = new Pedido();
-        //Usuario (FK)
-        Usuario user = buscarUsuarioPorId(pedidoDto.getIdUsuario());
-        nuevoPedido.setIdUsuario(user);
-        //Dirección (FK)
-        Direccion address = buscarDireccionPorId(pedidoDto.getIdDireccion());
-        nuevoPedido.setIdDireccion(address);
-        //MetodoPago (FK)
-        MetodoPago payMethod = buscarPagoPorId(pedidoDto.getIdPago());
-        nuevoPedido.setIdMetodoPago(payMethod);
-        nuevoPedido.setFechaPedido(new Date());
-        nuevoPedido.setImpuesto(BigDecimal.valueOf(0.16));
-        nuevoPedido.setTotal(pedidoDto.getTotal());
-        nuevoPedido.setEstado(pedidoDto.getEstado());
+    @Autowired
+    DetalleCarritoRepository detalleCarritoRepository;
 
+    @Autowired
+    CarritoRepository carritoRepository;
+
+    @Autowired
+    DetallePedidoRepository detallePedidoRepository;
+
+    public PedidoDto savePedido(PedidoDto pedidoDto){
+        //PRIMERA PARTE: llenar la tabla de pedidos
+        Pedido nuevoPedido = new Pedido();
+        //Obtener el ID del usuario (FK)
+        Usuario user = usuarioRepository.getReferenceById(pedidoDto.getIdUsuario());
+        nuevoPedido.setIdUsuario(user);
+        //Obtener el ID de la dirección (FK)
+        Direccion address = direccionRepository.getReferenceById(pedidoDto.getIdDireccion());
+        nuevoPedido.setIdDireccion(address);
+        //Obtener el ID del MétodoPago (FK)
+        MetodoPago payMethod = metodoPagoRepository.getReferenceById(pedidoDto.getIdPago());
+        nuevoPedido.setIdMetodoPago(payMethod);
+
+
+        float impuesto = 0.16F;
+        float totalCompraNeta = 0.0F;
+
+        //Obtener el carrito del usuario y que este activo. El .get(0) especifica que solo se traiga la primera coincidencia
+        Carrito car = carritoRepository.findByIdUsuarioAndEstado(user, true).get(0);
+        //Obtener el detalle del carrito
+        List<DetalleCarrito> productos = detalleCarritoRepository.findByIdCarrito(car);
+
+        // Calcular el total de la compra iterando en los articulos guardados en el carrito
+        for (DetalleCarrito productoBd: productos){
+            // Sumar el precio de los productos para calcular el total
+            totalCompraNeta += productoBd.getPrecio() * productoBd.getCantidad();
+        }
+
+        nuevoPedido.setFechaPedido(new Date());
+        //Asignar los valores calculados
+        nuevoPedido.setImpuesto(totalCompraNeta * impuesto);
+        nuevoPedido.setTotal(totalCompraNeta + impuesto);
+        nuevoPedido.setEstado(true);
         pedidoRepository.save(nuevoPedido);
+
+        // SEGUNDA PARTE: rellenar la tabla de detalles_pedido
+        for (DetalleCarrito productoBd: productos){
+            DetallePedido detallePedido = new DetallePedido();
+            detallePedido.setIdProducto(productoBd.getIdProducto());
+            detallePedido.setIdPedido(nuevoPedido);
+            detallePedido.setCantidad(productoBd.getCantidad());
+            detallePedido.setPrecio(productoBd.getPrecio());
+            detallePedido.setTotal(productoBd.getCantidad() * productoBd.getPrecio());
+            detallePedidoRepository.save(detallePedido);
+        }
+
+        //Retroalimentación al usuario
         pedidoDto.setId(nuevoPedido.getIdPedido());
         pedidoDto.setFecha(nuevoPedido.getFechaPedido());
         pedidoDto.setImpuesto(nuevoPedido.getImpuesto());
+        pedidoDto.setTotal(nuevoPedido.getTotal());
 
         return pedidoDto;
 
 
-    }
-
-    private Usuario buscarUsuarioPorId(int idUsuario){
-        Usuario user = usuarioRepository.getReferenceById(idUsuario);
-        return user;
-    }
-
-    private Direccion buscarDireccionPorId(int idDireccion){
-        Direccion address = direccionRepository.getReferenceById(idDireccion);
-        return address;
-    }
-
-    private MetodoPago buscarPagoPorId(int idPago){
-        MetodoPago payMethod = metodoPagoRepository.getReferenceById(idPago);
-        return payMethod;
     }
 
     public List<PedidoDto> getPedidos(){
@@ -92,7 +111,6 @@ public class PedidoService {
             pedidoDto.setFecha(pedido.getFechaPedido());
             pedidoDto.setImpuesto(pedido.getImpuesto());
             pedidoDto.setTotal(pedido.getTotal());
-            pedidoDto.setEstado(pedido.getEstado());
 
             listaPedidos.add(pedidoDto);
         }

@@ -14,9 +14,8 @@ public class PedidoDto {
     private int idDireccion;
     private int idPago;
     private Date fecha;
-    private BigDecimal impuesto;
-    private BigDecimal total;
-    private String Estado;
+    private Float impuesto;
+    private Float total;
 
     public PedidoDto(){
 

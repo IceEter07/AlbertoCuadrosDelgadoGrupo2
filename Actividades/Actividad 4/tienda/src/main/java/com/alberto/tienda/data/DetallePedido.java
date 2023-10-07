@@ -29,8 +29,8 @@ public class DetallePedido {
     private  Integer cantidad;
 
     @Column(name = "precio", nullable = false, precision = 11, scale = 2)
-    private BigDecimal precio;
+    private Float precio;
 
-    @Column(name = "descuento", nullable = false, precision = 11, scale = 2)
-    private BigDecimal descuento;
+    @Column(name = "total", nullable = false)
+    private Float total;
 }

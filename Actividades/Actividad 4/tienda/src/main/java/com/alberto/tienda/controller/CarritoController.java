@@ -16,7 +16,7 @@ public class CarritoController {
 
     @GetMapping("/obtenerCarritos")
     public List<CarritoDto> getCars(){
-        return carritoService.getCarrito();
+        return carritoService.getCarritos();
     }
 
     @PostMapping("/guardarCarrito")
