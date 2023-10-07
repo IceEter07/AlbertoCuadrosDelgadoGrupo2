@@ -18,22 +18,10 @@ public class MetodoPago {
     @JoinColumn(name = "usuarios_id_usuario", nullable = false)
     private Usuario idUsuario;
 
-    @Column(name = "nombre",length = 50)
+    @Column(name = "nombre",length = 45, nullable = false)
     private String nombre;
 
-    @Column(name = "numero_tarjeta", length = 50)
-    private String numTarjeta;
-
-    @Column(name = "vencimiento_mes", length = 2)
-    private String vencimiento_mes;
-
-    @Column(name = "vencimiento_ano", length = 2)
-    private String vencimiento_ano;
-
-    @Column(name = "cvv", length = 4)
-    private String cvv;
-
-    @Column(name = "is_active", length = 2)
-    private String isActive;
+    @Column(name = "descripcion", length = 45, nullable = false)
+    private String descripcion;
 
 }

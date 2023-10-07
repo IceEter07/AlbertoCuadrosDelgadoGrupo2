@@ -29,15 +29,15 @@ public class Pedido {
     @JoinColumn(name = "metodos_pago_id_pago", nullable = false)
     private MetodoPago idMetodoPago;
 
-    @Column(name = "fecha", nullable = false)
+    @Column(name = "fecha_pedido", nullable = false)
     private Date fechaPedido;
 
-    @Column(name = "impuesto", nullable = false, precision = 4, scale = 2)
-    private BigDecimal impuesto;
+    @Column(name = "impuesto", nullable = false)
+    private Float impuesto;
 
-    @Column(name = "total", nullable = false, precision = 11, scale = 2)
-    private BigDecimal total;
+    @Column(name = "total", nullable = false)
+    private Float total;
 
-    @Column(name = "estado", nullable = false, length = 20)
-    private String estado;
+    @Column(name = "isActive", nullable = false)
+    private Boolean estado;
 }

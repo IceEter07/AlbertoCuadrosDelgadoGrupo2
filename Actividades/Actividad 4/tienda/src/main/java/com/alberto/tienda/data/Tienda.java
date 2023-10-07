@@ -14,6 +14,10 @@ public class Tienda {
     @Column(name = "id_tienda", nullable = false)
     private Integer idTienda;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "usuarios_id_usuario", nullable = false)
+    private Usuario idUsuario;
+
     @Column(name = "rfc_empresa", nullable = false, unique = true, length = 15)
     private String rfc;
 

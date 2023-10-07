@@ -20,9 +20,9 @@ public class Carrito {
     @JoinColumn(name = "usuarios_id_usuario", nullable = false)
     private Usuario idUsuario;
 
-    @Column(name = "total", nullable = false, precision = 11, scale = 2)
-    private BigDecimal total;
+    @Column(name = "total", nullable = false)
+    private Float total;
 
-    @Column(name = "estado_carrito", nullable = false, length = 20)
-    private String estado;
+    @Column(name = "isActive", nullable = false)
+    private Boolean estado;
 }

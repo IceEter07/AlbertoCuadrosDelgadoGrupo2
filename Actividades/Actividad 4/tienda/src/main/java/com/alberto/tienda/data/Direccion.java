@@ -34,8 +34,8 @@ public class Direccion {
     private String calle;
 
     @Column(name = "num_ext")
-    private String numExt;
+    private Integer numExt;
 
     @Column(name = "num_int")
-    private String numInt;
+    private Integer numInt;
 }

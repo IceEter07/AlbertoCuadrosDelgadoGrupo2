@@ -1,8 +1,13 @@
 package com.alberto.tienda.service;
 
+import com.alberto.tienda.data.Rol;
 import com.alberto.tienda.data.Usuario;
+import com.alberto.tienda.data.UsuarioRol;
+import com.alberto.tienda.data.dto.RolAddDto;
 import com.alberto.tienda.data.dto.UsuarioDto;
+import com.alberto.tienda.repository.RolRepository;
 import com.alberto.tienda.repository.UsuarioRepository;
+import com.alberto.tienda.repository.UsuarioRolRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +19,12 @@ public class UsuarioService {
 
     @Autowired
     UsuarioRepository usuarioRepository;
+
+    @Autowired
+    UsuarioRolRepository usuarioRolRepository;
+
+    @Autowired
+    RolRepository rolRepository;
 
     public List<UsuarioDto> getUsuarios(){
         List<UsuarioDto> listaUsuarios = new ArrayList<>();
@@ -33,17 +44,31 @@ public class UsuarioService {
         return listaUsuarios;
     }
 
-    public UsuarioDto guardarUsuario(UsuarioDto dto){
+    public UsuarioDto guardarUsuario(UsuarioDto usuarioDto){
         Usuario usuario = new Usuario();
-        usuario.setNombre(dto.getNombre());
-        usuario.setApPat(dto.getApPat());
-        usuario.setApMat(dto.getApMat());
-        usuario.setTelefono(dto.getTelefono());
-        usuario.setEmail(dto.getEmail());
-        usuario.setPass(dto.getPass());
-        usuario = usuarioRepository.save(usuario);
-        dto.setId(usuario.getId());
+        usuario.setNombre(usuarioDto.getNombre());
+        usuario.setApPat(usuarioDto.getApPat());
+        usuario.setApMat(usuarioDto.getApMat());
+        usuario.setTelefono(usuarioDto.getTelefono());
+        usuario.setEmail(usuarioDto.getEmail());
+        usuario.setPass(usuarioDto.getPass());
 
-        return dto;
+        usuario = usuarioRepository.save(usuario);
+        usuarioDto.setId(usuario.getId());
+
+        //Asignar el rol al usuario automaticamente
+        Rol rolBd = rolRepository.getReferenceById(1);
+        UsuarioRol usuarioRol = new UsuarioRol();
+        // Hacer que el rol sea el 1 por defecto (que sea comprador)
+        usuarioRol.setIdRol(rolBd);
+        usuarioRol.setIdUsuario(usuario);
+        usuarioRolRepository.save(usuarioRol);
+
+        return usuarioDto;
+    }
+
+    private Rol buscarRolPorId(int idRol){
+        Rol rol = rolRepository.getReferenceById(idRol);
+        return rol;
     }
 }
