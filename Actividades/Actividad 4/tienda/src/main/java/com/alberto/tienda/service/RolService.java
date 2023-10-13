@@ -2,7 +2,9 @@ package com.alberto.tienda.service;
 
 import com.alberto.tienda.data.Rol;
 import com.alberto.tienda.data.dto.RolDto;
+import com.alberto.tienda.exceptions.BadRequestException;
 import com.alberto.tienda.repository.RolRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,11 +22,18 @@ public class RolService {
     //El usuario obtenga la lista de roles o que tambien pueda crear roles específicos.
 
     //De momento voy a crear los metodos get y findAll solo para prácticar
-    public RolDto guardarRol(RolDto rolDto){
+    public RolDto guardarRol(@Valid RolDto rolDto){
         Rol nuevoRol = new Rol();
         nuevoRol.setNombre(rolDto.getNombre());
-        rolRepository.save(nuevoRol);
-        rolDto.setId(nuevoRol.getId());
+        List<Rol> findRol = rolRepository.findByNombre(rolDto.getNombre());
+        //Comprobar que el rol no exista
+        if (findRol.isEmpty()){
+            rolRepository.save(nuevoRol);
+            rolDto.setId(nuevoRol.getId());
+        }
+        else {
+            throw new BadRequestException("El rol ya esta registrado");
+        }
         return rolDto;
     }
 

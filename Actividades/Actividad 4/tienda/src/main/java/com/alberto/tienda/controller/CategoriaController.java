@@ -2,13 +2,16 @@ package com.alberto.tienda.controller;
 
 import com.alberto.tienda.data.dto.CategoriaDto;
 import com.alberto.tienda.service.CategoriaService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("categoria")
+@Validated
 public class CategoriaController {
 
     @Autowired
@@ -20,7 +23,7 @@ public class CategoriaController {
     }
 
     @PostMapping("/guardarCategoria")
-    public CategoriaDto saveCategories(@RequestBody CategoriaDto dto){
+    public CategoriaDto saveCategories(@Valid @RequestBody CategoriaDto dto){
         return categoriaService.guardarCategoria(dto);
     }
 }

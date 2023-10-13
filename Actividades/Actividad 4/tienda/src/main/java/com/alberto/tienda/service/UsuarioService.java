@@ -3,11 +3,13 @@ package com.alberto.tienda.service;
 import com.alberto.tienda.data.Rol;
 import com.alberto.tienda.data.Usuario;
 import com.alberto.tienda.data.UsuarioRol;
-import com.alberto.tienda.data.dto.RolAddDto;
 import com.alberto.tienda.data.dto.UsuarioDto;
+import com.alberto.tienda.exceptions.BadRequestException;
 import com.alberto.tienda.repository.RolRepository;
 import com.alberto.tienda.repository.UsuarioRepository;
 import com.alberto.tienda.repository.UsuarioRolRepository;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,7 +46,9 @@ public class UsuarioService {
         return listaUsuarios;
     }
 
-    public UsuarioDto guardarUsuario(UsuarioDto usuarioDto){
+    @Transactional
+    public UsuarioDto guardarUsuario(@Valid UsuarioDto usuarioDto){
+
         Usuario usuario = new Usuario();
         usuario.setNombre(usuarioDto.getNombre());
         usuario.setApPat(usuarioDto.getApPat());
@@ -53,22 +57,31 @@ public class UsuarioService {
         usuario.setEmail(usuarioDto.getEmail());
         usuario.setPass(usuarioDto.getPass());
 
-        usuario = usuarioRepository.save(usuario);
-        usuarioDto.setId(usuario.getId());
+        //Comprobar que el usuario No este registrado.
+        List<Usuario> findEmail = usuarioRepository.findByEmail(usuarioDto.getEmail());
+        if(findEmail.isEmpty()){
+            usuario = usuarioRepository.save(usuario);
+            usuarioDto.setId(usuario.getId());
+        }
+        else{
+            throw new BadRequestException("El email ya fue registrado");
+        }
 
         //Asignar el rol al usuario automaticamente
-        Rol rolBd = rolRepository.getReferenceById(1);
+        //Buscar si existe el rol "comprador", sí no esta se crea.
+        List<Rol> rolBD = rolRepository.findByNombre("comprador");
+        if (rolBD.isEmpty()){
+            Rol nuevoRol = new Rol();
+            nuevoRol.setNombre("comprador");
+            rolRepository.save(nuevoRol);
+        }
+
+        Rol rolBd = rolRepository.findByNombre("comprador").get(0);
         UsuarioRol usuarioRol = new UsuarioRol();
-        // Hacer que el rol sea el 1 por defecto (que sea comprador)
         usuarioRol.setIdRol(rolBd);
         usuarioRol.setIdUsuario(usuario);
         usuarioRolRepository.save(usuarioRol);
 
         return usuarioDto;
-    }
-
-    private Rol buscarRolPorId(int idRol){
-        Rol rol = rolRepository.getReferenceById(idRol);
-        return rol;
     }
 }

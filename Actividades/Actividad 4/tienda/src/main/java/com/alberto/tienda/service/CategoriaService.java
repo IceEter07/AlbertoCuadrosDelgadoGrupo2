@@ -2,7 +2,9 @@ package com.alberto.tienda.service;
 
 import com.alberto.tienda.data.Categoria;
 import com.alberto.tienda.data.dto.CategoriaDto;
+import com.alberto.tienda.exceptions.BadRequestException;
 import com.alberto.tienda.repository.CategoriaRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,12 +17,18 @@ public class CategoriaService {
     @Autowired
     CategoriaRepository categoriaRepository;
 
-    public CategoriaDto guardarCategoria(CategoriaDto categoriaDto){
+    public CategoriaDto guardarCategoria(@Valid CategoriaDto categoriaDto){
         Categoria nuevaCategoria = new Categoria();
-        nuevaCategoria.setNombre(categoriaDto.getNombre());
-        nuevaCategoria.setDescripcion(categoriaDto.getDescripcion());
-        categoriaRepository.save(nuevaCategoria);
-        categoriaDto.setId(nuevaCategoria.getIdCategoria());
+        List<Categoria> findCategoria = categoriaRepository.findByNombre(categoriaDto.getNombre());
+        if (findCategoria.isEmpty()){
+            nuevaCategoria.setNombre(categoriaDto.getNombre());
+            nuevaCategoria.setDescripcion(categoriaDto.getDescripcion());
+            categoriaRepository.save(nuevaCategoria);
+            categoriaDto.setId(nuevaCategoria.getIdCategoria());
+        }
+        else{
+            throw new BadRequestException("La categoría ya fue registrada");
+        }
 
         return  categoriaDto;
     }

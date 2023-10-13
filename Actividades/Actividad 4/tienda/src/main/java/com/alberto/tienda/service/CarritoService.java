@@ -6,10 +6,12 @@ import com.alberto.tienda.data.Producto;
 import com.alberto.tienda.data.Usuario;
 import com.alberto.tienda.data.dto.CarritoDto;
 import com.alberto.tienda.data.dto.ProductoAddDto;
+import com.alberto.tienda.exceptions.EntityNotFoundException;
 import com.alberto.tienda.repository.CarritoRepository;
 import com.alberto.tienda.repository.DetalleCarritoRepository;
 import com.alberto.tienda.repository.ProductoRepository;
 import com.alberto.tienda.repository.UsuarioRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,17 +32,19 @@ public class CarritoService {
     @Autowired
     DetalleCarritoRepository detalleCarritoRepository;
 
-    public CarritoDto guardarCarrito(CarritoDto carritoDto){
+    public CarritoDto guardarCarrito(@Valid CarritoDto carritoDto){
         // PRIMERA PARTE: rellenar la tabla carrito
         Carrito nuevoCarrito = new Carrito();
-        Usuario user = usuarioRepository.getReferenceById(carritoDto.getIdUsuario());
+        Usuario user = usuarioRepository.findById(carritoDto.getIdUsuario())
+                .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
         nuevoCarrito.setIdUsuario(user);
         //nuevoCarrito.setTotal(carritoDto.getTotal());
         float totalCompra  = 0.0F;
 
         // Calcular el total de la compra iterando en la lista de productos proporcionada
         for (ProductoAddDto productoJson: carritoDto.getProductos()){
-            Producto productoBd = productoRepository.getReferenceById(productoJson.getIdProducto());
+            Producto productoBd = productoRepository.findById(productoJson.getIdProducto())
+                    .orElseThrow(() -> new EntityNotFoundException("El producto con id " + productoJson.getIdProducto()+ " no existe."));
             // Calcular el total de la compra
             totalCompra += productoBd.getPrecioVenta() * productoJson.getCantidad();
             // Actualizar el Json para mantener informado al usuario
@@ -56,10 +60,12 @@ public class CarritoService {
         // SEGUNDA PARTE: Rellenar la tabla intermedia "detalle_carrito"
 
         for (ProductoAddDto productoJson: carritoDto.getProductos()){
-            Producto productoBd = productoRepository.getReferenceById(productoJson.getIdProducto());
+            Producto productoBd = productoRepository.findById(productoJson.getIdProducto())
+                    .orElseThrow(() -> new EntityNotFoundException("El producto con id " + productoJson.getIdProducto() + " no existe."));
             DetalleCarrito detalleCarrito = new DetalleCarrito();
 
-            Carrito idCarrito = carritoRepository.getReferenceById(nuevoCarrito.getIdCarrito());
+            Carrito idCarrito = carritoRepository.findById(nuevoCarrito.getIdCarrito())
+                    .orElseThrow(() -> new EntityNotFoundException("El carrito con id " + nuevoCarrito.getIdCarrito() + " no existe."));
             detalleCarrito.setIdCarrito(idCarrito);
             detalleCarrito.setIdProducto(productoBd);
             //Guardar los datos calculados
@@ -76,19 +82,44 @@ public class CarritoService {
         return carritoDto;
     }
 
-    public List<CarritoDto> getCarritos(){
-        List<CarritoDto> listaCarritos = new ArrayList<>();
+    public List<CarritoDto> getCarritoPorUsuario(Integer idUsuario){
+        Usuario user = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
 
-        for(Carrito car: carritoRepository.findAll()){
+        List<Carrito> findCarrito = carritoRepository.findByIdUsuarioAndEstado(user, true);
+        if (findCarrito.isEmpty()){
+            throw new EntityNotFoundException("No existe ningún carrito activo para el usuario " + idUsuario);
+        }
+
+        List<DetalleCarrito> productsCar = detalleCarritoRepository.findByIdCarrito(findCarrito.get(0));
+
+        List<CarritoDto> listaCarrito = new ArrayList<>();
+        List<ProductoAddDto> listaProductos = new ArrayList<>();
+//        CarritoDto carritoDto = new CarritoDto();
+//        carritoDto.setIdUsuario(user.getId());
+
+        //Obtener detalles generales del carrito
+        for(Carrito car: findCarrito){
             CarritoDto carritoDto = new CarritoDto();
             carritoDto.setId(car.getIdCarrito());
             //Id usuario (FK)
-            Usuario idUsuario = car.getIdUsuario();
-            carritoDto.setIdUsuario(idUsuario.getId());
+            carritoDto.setIdUsuario(idUsuario);
             carritoDto.setTotal(car.getTotal());
 
-            listaCarritos.add(carritoDto);
+            //Obtener productos
+            for(DetalleCarrito carDetails: productsCar){
+                ProductoAddDto productoAddDto = new ProductoAddDto();
+                productoAddDto.setIdProducto(carDetails.getIdProducto().getIdProducto());
+                productoAddDto.setPrecioUnitario(carDetails.getPrecio());
+                productoAddDto.setCantidad(carDetails.getCantidad());
+                productoAddDto.setTotal(carDetails.getTotal());
+                //Asignar los productos a la lista
+                listaProductos.add(productoAddDto);
+                //Asignar la lista al campo de comprasDto
+                carritoDto.setProductos(listaProductos);
+            }
+        listaCarrito.add(carritoDto);
         }
-        return listaCarritos;
+        return listaCarrito;
     }
 }

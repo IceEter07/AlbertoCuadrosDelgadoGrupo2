@@ -4,9 +4,11 @@ import com.alberto.tienda.data.Categoria;
 import com.alberto.tienda.data.Producto;
 import com.alberto.tienda.data.Tienda;
 import com.alberto.tienda.data.dto.ProductoDto;
+import com.alberto.tienda.exceptions.EntityNotFoundException;
 import com.alberto.tienda.repository.CategoriaRepository;
 import com.alberto.tienda.repository.ProductoRepository;
 import com.alberto.tienda.repository.TiendaRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,13 +27,15 @@ public class ProductoService {
     @Autowired
     TiendaRepository tiendaRepository;
 
-    public ProductoDto guardarProducto(ProductoDto productoDto){
+    public ProductoDto guardarProducto(@Valid ProductoDto productoDto){
         Producto nuevoProducto = new Producto();
         //Guardar el Id de la categoria (FK)
-        Categoria category = buscarCategoriaPorId(productoDto.getIdCategoria());
+        Categoria category = categoriaRepository.findById(productoDto.getIdCategoria())
+                .orElseThrow(() -> new EntityNotFoundException("La categoría no existe"));
         nuevoProducto.setIdCategoria(category);
         //Guardar el ID de la tiena (FK)
-        Tienda shop = buscarTiendaPorId(productoDto.getIdTienda());
+        Tienda shop = tiendaRepository.findById(productoDto.getIdTienda())
+                .orElseThrow(() -> new EntityNotFoundException("La tienda no existe"));
         nuevoProducto.setIdTienda(shop);
         nuevoProducto.setCodigo(productoDto.getCodigo());
         nuevoProducto.setNombre(productoDto.getNombre());
@@ -43,16 +47,6 @@ public class ProductoService {
         productoDto.setId(nuevoProducto.getIdProducto());
 
         return productoDto;
-    }
-
-    private Categoria buscarCategoriaPorId(int idCategoria){
-        Categoria category = categoriaRepository.getReferenceById(idCategoria);
-        return category;
-    }
-
-    private Tienda buscarTiendaPorId(int idTienda){
-        Tienda shop = tiendaRepository.getReferenceById(idTienda);
-        return shop;
     }
 
     public List<ProductoDto> getProductos(){
@@ -68,8 +62,57 @@ public class ProductoService {
             Tienda idTienda = product.getIdTienda();
             productoDto.setIdTienda(idTienda.getIdTienda());
             productoDto.setCodigo(product.getCodigo());
+            productoDto.setNombre(product.getNombre());
             productoDto.setPrecio(product.getPrecioVenta());
-            productoDto.setNumeroProductos(productoDto.getNumeroProductos());
+            productoDto.setNumeroProductos(product.getStock());
+            productoDto.setDescripcion(product.getDescripcion());
+
+            listaProductos.add(productoDto);
+        }
+        return listaProductos;
+    }
+
+    public List<ProductoDto> getProductosPorTienda(Integer idTienda){
+        Tienda shop = tiendaRepository.findById(idTienda)
+                .orElseThrow(() -> new EntityNotFoundException("La tienda no existe"));
+        List<ProductoDto> listaProductos = new ArrayList<>();
+
+        for (Producto product : productoRepository.findByidTienda(shop)){
+            ProductoDto productoDto = new ProductoDto();
+            productoDto.setId(product.getIdProducto());
+            //Id de la categoria (FK)
+            Categoria idCategoria = product.getIdCategoria();
+            productoDto.setIdCategoria(idCategoria.getIdCategoria());
+            //ID de la tienda (FK)
+            productoDto.setIdTienda(idTienda);
+            productoDto.setCodigo(product.getCodigo());
+            productoDto.setNombre(product.getNombre());
+            productoDto.setPrecio(product.getPrecioVenta());
+            productoDto.setNumeroProductos(product.getStock());
+            productoDto.setDescripcion(product.getDescripcion());
+
+            listaProductos.add(productoDto);
+        }
+        return listaProductos;
+    }
+
+    public List<ProductoDto> getProductosPorCategoria(Integer idCategoria){
+        Categoria cat = categoriaRepository.findById(idCategoria)
+                .orElseThrow(() -> new EntityNotFoundException("La categoría no existe"));
+        List<ProductoDto> listaProductos = new ArrayList<>();
+
+        for (Producto product : productoRepository.findByidCategoria(cat)){
+            ProductoDto productoDto = new ProductoDto();
+            productoDto.setId(product.getIdProducto());
+            //Id de la categoria (FK)
+            productoDto.setIdCategoria(idCategoria);
+            //ID de la tienda (FK)
+            Tienda idTienda = product.getIdTienda();
+            productoDto.setIdTienda(idTienda.getIdTienda());
+            productoDto.setCodigo(product.getCodigo());
+            productoDto.setNombre(product.getNombre());
+            productoDto.setPrecio(product.getPrecioVenta());
+            productoDto.setNumeroProductos(product.getStock());
             productoDto.setDescripcion(product.getDescripcion());
 
             listaProductos.add(productoDto);
