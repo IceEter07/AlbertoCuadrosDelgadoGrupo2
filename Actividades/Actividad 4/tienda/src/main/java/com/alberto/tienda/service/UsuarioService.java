@@ -3,11 +3,14 @@ package com.alberto.tienda.service;
 import com.alberto.tienda.data.Rol;
 import com.alberto.tienda.data.Usuario;
 import com.alberto.tienda.data.UsuarioRol;
+import com.alberto.tienda.data.dto.RespuestaGenerica;
 import com.alberto.tienda.data.dto.UsuarioDto;
 import com.alberto.tienda.exceptions.BadRequestException;
+import com.alberto.tienda.exceptions.EntityNotFoundException;
 import com.alberto.tienda.repository.RolRepository;
 import com.alberto.tienda.repository.UsuarioRepository;
 import com.alberto.tienda.repository.UsuarioRolRepository;
+import com.alberto.tienda.utils.Constantes;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +31,14 @@ public class UsuarioService {
     @Autowired
     RolRepository rolRepository;
 
-    public List<UsuarioDto> getUsuarios(){
-        List<UsuarioDto> listaUsuarios = new ArrayList<>();
+    public RespuestaGenerica getUsuarios(){
+        List<Usuario> users = usuarioRepository.findAll();
+        if (users.isEmpty()){
+            throw new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE);
+        }
+        RespuestaGenerica respuesta  = new RespuestaGenerica();
 
-        for(Usuario user: usuarioRepository.findAll()){
+        for(Usuario user: users){
             UsuarioDto usuarioDto = new UsuarioDto();
             usuarioDto.setId(user.getId());
             usuarioDto.setNombre(user.getNombre());
@@ -41,14 +48,37 @@ public class UsuarioService {
             usuarioDto.setEmail(user.getEmail());
             usuarioDto.setPass(user.getPass());
 
-            listaUsuarios.add(usuarioDto);
+            respuesta.getDatos().add(usuarioDto);
         }
-        return listaUsuarios;
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
+
+        return respuesta;
     }
 
-    @Transactional
-    public UsuarioDto guardarUsuario(@Valid UsuarioDto usuarioDto){
+    public RespuestaGenerica getUsuario(Integer idUsuario) {
 
+        Usuario user = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
+
+        RespuestaGenerica respuesta = new RespuestaGenerica();
+            UsuarioDto usuarioDto = new UsuarioDto();
+            usuarioDto.setId(user.getId());
+            usuarioDto.setNombre(user.getNombre());
+            usuarioDto.setApPat(user.getApPat());
+            usuarioDto.setApMat(user.getApMat());
+            usuarioDto.setTelefono(user.getTelefono());
+            usuarioDto.setEmail(user.getEmail());
+            usuarioDto.setPass(user.getPass());
+
+            respuesta.getDatos().add(usuarioDto);
+            respuesta.setExito(true);
+            respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
+        return respuesta;
+    }
+    @Transactional
+    public RespuestaGenerica guardarUsuario(@Valid UsuarioDto usuarioDto){
+        RespuestaGenerica respuesta = new RespuestaGenerica();
         Usuario usuario = new Usuario();
         usuario.setNombre(usuarioDto.getNombre());
         usuario.setApPat(usuarioDto.getApPat());
@@ -62,9 +92,12 @@ public class UsuarioService {
         if(findEmail.isEmpty()){
             usuario = usuarioRepository.save(usuario);
             usuarioDto.setId(usuario.getId());
+            respuesta.setExito(true);
+            respuesta.getDatos().add(usuarioDto);
+            respuesta.setMensaje(Constantes.MENSAJE_USUARIO_REGISTRADO_EXISTOSAMENTE+usuarioDto.getId());
         }
         else{
-            throw new BadRequestException("El email ya fue registrado");
+            throw new BadRequestException(Constantes.MENSAJE_EMAIL_YA_REGISTRADO);
         }
 
         //Asignar el rol al usuario automaticamente
@@ -82,6 +115,6 @@ public class UsuarioService {
         usuarioRol.setIdUsuario(usuario);
         usuarioRolRepository.save(usuarioRol);
 
-        return usuarioDto;
+        return respuesta;
     }
 }

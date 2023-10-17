@@ -4,6 +4,7 @@ import com.alberto.tienda.data.Rol;
 import com.alberto.tienda.data.Tienda;
 import com.alberto.tienda.data.Usuario;
 import com.alberto.tienda.data.UsuarioRol;
+import com.alberto.tienda.data.dto.RespuestaGenerica;
 import com.alberto.tienda.data.dto.TiendaDto;
 import com.alberto.tienda.exceptions.BadRequestException;
 import com.alberto.tienda.exceptions.EntityNotFoundException;
@@ -11,6 +12,7 @@ import com.alberto.tienda.repository.RolRepository;
 import com.alberto.tienda.repository.TiendaRepository;
 import com.alberto.tienda.repository.UsuarioRepository;
 import com.alberto.tienda.repository.UsuarioRolRepository;
+import com.alberto.tienda.utils.Constantes;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,24 +35,31 @@ public class TiendaService {
     @Autowired
     UsuarioRolRepository usuarioRolRepository;
 
-    public TiendaDto guardarTienda(@Valid TiendaDto tiendaDto){
-        Tienda nuevaTienda = new Tienda();
+    public RespuestaGenerica guardarTienda(@Valid TiendaDto tiendaDto){
         Usuario idUsuario = usuarioRepository.findById(tiendaDto.getIdUsuario())
-                .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
-        nuevaTienda.setIdUsuario(idUsuario);
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
         //Comprobar que el RFC no haya sido registrado
         List<Tienda> findRfc = tiendaRepository.findByRfc(tiendaDto.getRfc());
-        if (findRfc.isEmpty()){
-            nuevaTienda.setRfc(tiendaDto.getRfc());
-            nuevaTienda.setNombre(tiendaDto.getNombre());
-            nuevaTienda.setDescripcion(tiendaDto.getDescripcion());
-            nuevaTienda.setRating(tiendaDto.getRating());
-            nuevaTienda = tiendaRepository.save(nuevaTienda);
-            tiendaDto.setId(nuevaTienda.getIdTienda());
+        List<Tienda> findNombre = tiendaRepository.findByNombre(tiendaDto.getNombre());
+
+        if (!(findRfc.isEmpty())){
+            throw new BadRequestException(Constantes.MENSAJE_RFC_YA_REGISTRADO);
         }
-        else {
-            throw new BadRequestException("El RFC ya fue registrado");
+
+        if (!(findNombre.isEmpty())){
+            throw  new BadRequestException(Constantes.MENSAJE_NOMBRE_TIENDA_YA_REGISTRADO);
         }
+
+        Tienda nuevaTienda = new Tienda();
+        RespuestaGenerica respuesta = new RespuestaGenerica();
+
+        nuevaTienda.setIdUsuario(idUsuario);
+        nuevaTienda.setRfc(tiendaDto.getRfc());
+        nuevaTienda.setNombre(tiendaDto.getNombre());
+        nuevaTienda.setDescripcion(tiendaDto.getDescripcion());
+        nuevaTienda.setRating(tiendaDto.getRating());
+        nuevaTienda = tiendaRepository.save(nuevaTienda);
+        tiendaDto.setId(nuevaTienda.getIdTienda());
 
         // Añadir un nuevo rol al usuario
         //Comprobar que el rol exista en la BD. Sí no existe se crea.
@@ -62,19 +71,34 @@ public class TiendaService {
         }
 
         //Actualizar la tabla usuario_rol
+
+        //Obtener ID del rol
         Rol rolBd = rolRepository.findByNombre("vendedor").get(0);
-        UsuarioRol usuarioRol = new UsuarioRol();
-        usuarioRol.setIdRol(rolBd);
-        usuarioRol.setIdUsuario(nuevaTienda.getIdUsuario());
-        usuarioRolRepository.save(usuarioRol);
+        //Validar que el usuario aún NO tenga un rol de "vendedor"
+        List<UsuarioRol> findUsuarioRol = usuarioRolRepository.findByIdUsuarioAndIdRol(idUsuario, rolBd);
+        if (findUsuarioRol.isEmpty()){
+            UsuarioRol usuarioRol = new UsuarioRol();
+            usuarioRol.setIdRol(rolBd);
+            usuarioRol.setIdUsuario(nuevaTienda.getIdUsuario());
+            usuarioRolRepository.save(usuarioRol);
+        }
 
-        return tiendaDto;
+        respuesta.getDatos().add(tiendaDto);
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CAMPO_REGISTRADO_EXISTOSAMENTE);
+        return respuesta;
     }
 
-    public List<TiendaDto> getTiendas(){
-        List<TiendaDto> listaTiendas = new ArrayList<>();
+    public RespuestaGenerica getTiendas(){
+        List<Tienda> tiendas = tiendaRepository.findAll();
+        if (tiendas.isEmpty())
+        {
+            throw new EntityNotFoundException(Constantes.MENSAJE_SIN_HISTORIAL_DE_TIENDAS);
+        }
 
-        for (Tienda shop: tiendaRepository.findAll()){
+        RespuestaGenerica respuesta = new RespuestaGenerica();
+
+        for (Tienda shop: tiendas){
             TiendaDto tiendaDto = new TiendaDto();
             tiendaDto.setId(shop.getIdTienda());
             tiendaDto.setIdUsuario(shop.getIdUsuario().getId());
@@ -83,18 +107,24 @@ public class TiendaService {
             tiendaDto.setDescripcion(shop.getDescripcion());
             tiendaDto.setRating(shop.getRating());
 
-            listaTiendas.add(tiendaDto);
+            respuesta.getDatos().add(tiendaDto);
         }
-        return listaTiendas;
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
+        return respuesta;
     }
 
-    public List<TiendaDto> getTiendasPorUsuario(Integer idUsuario){
+    public RespuestaGenerica getTiendasPorUsuario(Integer idUsuario){
         Usuario user = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
 
-        List<TiendaDto> listaTiendas = new ArrayList<>();
+        List<Tienda> tiendas = tiendaRepository.findByIdUsuario(user);
+        if (tiendas.isEmpty()){
+            throw new EntityNotFoundException(Constantes.MENSAJE_SIN_HISTORIAL_DE_TIENDAS);
+        }
+        RespuestaGenerica respuesta = new RespuestaGenerica();
 
-        for (Tienda shop: tiendaRepository.findByIdUsuario(user)){
+        for (Tienda shop: tiendas){
             TiendaDto tiendaDto = new TiendaDto();
             tiendaDto.setId(shop.getIdTienda());
             tiendaDto.setIdUsuario(shop.getIdUsuario().getId());
@@ -103,8 +133,10 @@ public class TiendaService {
             tiendaDto.setDescripcion(shop.getDescripcion());
             tiendaDto.setRating(shop.getRating());
 
-            listaTiendas.add(tiendaDto);
+            respuesta.getDatos().add(tiendaDto);
         }
-        return listaTiendas;
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
+        return respuesta;
     }
 }

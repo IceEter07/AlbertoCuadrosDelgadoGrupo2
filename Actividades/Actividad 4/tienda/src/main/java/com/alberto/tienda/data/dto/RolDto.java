@@ -14,7 +14,7 @@ public class RolDto {
     private Integer id;
     @NotNull(message = "Debe ingresar un nombre de rol")
     @Size(message = "Se excedió el número de caracteres en el nombre del rol (max 10)", max = 10)
-    @Pattern(regexp = "^[A-Za-z]+$", message = "Solo ingrese datos alfabéticos")
+    @Pattern(regexp = "^[a-z]+$", message = "Solo ingrese letras minúsculas sin acentos o caracteres especiales")
     private String nombre;
 
     public RolDto(){

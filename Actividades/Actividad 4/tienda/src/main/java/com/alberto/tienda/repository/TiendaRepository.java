@@ -9,4 +9,5 @@ import java.util.List;
 public interface TiendaRepository extends JpaRepository<Tienda, Integer> {
     List<Tienda> findByRfc(String rfc);
     List<Tienda> findByIdUsuario(Usuario idUsuario);
+    List<Tienda> findByNombre (String nombre);
 }

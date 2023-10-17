@@ -4,10 +4,12 @@ import com.alberto.tienda.data.Producto;
 import com.alberto.tienda.data.Resena;
 import com.alberto.tienda.data.Usuario;
 import com.alberto.tienda.data.dto.ResenasDto;
+import com.alberto.tienda.data.dto.RespuestaGenerica;
 import com.alberto.tienda.exceptions.EntityNotFoundException;
 import com.alberto.tienda.repository.ProductoRepository;
 import com.alberto.tienda.repository.ResenaRepository;
 import com.alberto.tienda.repository.UsuarioRepository;
+import com.alberto.tienda.utils.Constantes;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,51 +30,71 @@ public class ResenasService {
     @Autowired
     ProductoRepository productoRepository;
 
-    public ResenasDto guardarResena(@Valid ResenasDto resenasDto){
-        Resena nuevaResena = new Resena();
+    public RespuestaGenerica guardarResena(@Valid ResenasDto resenasDto){
         //ID del usuario
         Usuario user = usuarioRepository.findById(resenasDto.getIdUsuario())
                 .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
-        nuevaResena.setIdUsuario(user);
         //ID del producto
         Producto product = productoRepository.findById(resenasDto.getIdProducto())
-                .orElseThrow(() -> new EntityNotFoundException("El producto no existe"));
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_PRODUCTO_NO_EXISTENTE+resenasDto.getIdProducto()));
+
+        Resena nuevaResena = new Resena();
+        RespuestaGenerica respuesta = new RespuestaGenerica();
+
+        nuevaResena.setIdUsuario(user);
         nuevaResena.setIdProducto(product);
         nuevaResena.setComentario(resenasDto.getComentario());
         nuevaResena.setFecha(new Date());
         resenaRepository.save(nuevaResena);
         resenasDto.setId(nuevaResena.getIdResena());
         resenasDto.setFecha(nuevaResena.getFecha());
+        respuesta.getDatos().add(resenasDto);
 
-        return resenasDto;
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CAMPO_REGISTRADO_EXISTOSAMENTE);
+        return respuesta;
     }
 
-    public List<ResenasDto> obtenerResenas(){
-        List<ResenasDto> listaResenas = new ArrayList<>();
+    public RespuestaGenerica obtenerResenasPorProducto(Integer idProducto){
+        Producto productoId = productoRepository.findById(idProducto)
+                .orElseThrow(()-> new EntityNotFoundException(Constantes.MENSAJE_PRODUCTO_NO_EXISTENTE+idProducto));
 
-        for (Resena comment: resenaRepository.findAll()){
+        //Obtener las reseñas por ID del producto
+        List<Resena> resenasProductos = resenaRepository.findByIdProducto(productoId);
+        if (resenasProductos.isEmpty()){
+            throw new EntityNotFoundException(Constantes.MENSAJE_SIN_HISTORIAL_DE_RESENAS);
+        }
+        RespuestaGenerica respuesta = new RespuestaGenerica();
+
+        for (Resena comment: resenasProductos){
             ResenasDto resenasDto = new ResenasDto();
             resenasDto.setId(comment.getIdResena());
             //Obtener el ID del usuario
             Usuario idUsuario = comment.getIdUsuario();
             resenasDto.setIdUsuario(idUsuario.getId());
             //Obtener el ID del producto
-            Producto idProducto = comment.getIdProducto();
-            resenasDto.setIdProducto(idProducto.getIdProducto());
+            resenasDto.setIdProducto(idProducto);
             resenasDto.setComentario(comment.getComentario());
             resenasDto.setFecha(comment.getFecha());
 
-            listaResenas.add(resenasDto);
+            respuesta.getDatos().add(resenasDto);
         }
-        return  listaResenas;
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
+        return  respuesta;
     }
 
-    public List<ResenasDto> obtenerResenasPorUsuario(Integer idUsuario){
+    public RespuestaGenerica obtenerResenasPorUsuario(Integer idUsuario){
         Usuario user = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
-        List<ResenasDto> listaResenas = new ArrayList<>();
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
 
-        for (Resena comment: resenaRepository.findByIdUsuario(user)){
+        List<Resena> resenasUsuarios = resenaRepository.findByIdUsuario(user);
+        if (resenasUsuarios.isEmpty()){
+            throw new EntityNotFoundException(Constantes.MENSAJE_SIN_HISTORIAL_DE_RESENAS);
+        }
+        RespuestaGenerica respuesta = new RespuestaGenerica();
+
+        for (Resena comment: resenasUsuarios){
             ResenasDto resenasDto = new ResenasDto();
             resenasDto.setId(comment.getIdResena());
             //Obtener el ID del usuario
@@ -83,8 +105,10 @@ public class ResenasService {
             resenasDto.setComentario(comment.getComentario());
             resenasDto.setFecha(comment.getFecha());
 
-            listaResenas.add(resenasDto);
+            respuesta.getDatos().add(resenasDto);
         }
-        return  listaResenas;
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
+        return  respuesta;
     }
 }

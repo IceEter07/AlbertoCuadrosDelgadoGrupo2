@@ -5,6 +5,7 @@ import com.alberto.tienda.data.dto.PedidoDto;
 import com.alberto.tienda.exceptions.BadRequestException;
 import com.alberto.tienda.exceptions.EntityNotFoundException;
 import com.alberto.tienda.repository.*;
+import com.alberto.tienda.utils.Constantes;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,15 +46,15 @@ public class PedidoService {
         Pedido nuevoPedido = new Pedido();
         //Obtener el ID del usuario (FK)
         Usuario user = usuarioRepository.findById(pedidoDto.getIdUsuario())
-                .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
         nuevoPedido.setIdUsuario(user);
         //Obtener el ID de la dirección (FK)
         Direccion address = direccionRepository.findById(pedidoDto.getIdDireccion())
-                .orElseThrow(() -> new EntityNotFoundException("La dirección no existe"));
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_DIRECCION_NO_EXISTENTE+pedidoDto.getIdDireccion()));
         nuevoPedido.setIdDireccion(address);
         //Obtener el ID del MétodoPago (FK)
         MetodoPago payMethod = metodoPagoRepository.findById(pedidoDto.getIdPago())
-                .orElseThrow(() -> new EntityNotFoundException("El método de pago no existe"));
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_METODO_PAGO_NO_EXISTENTE+pedidoDto.getIdPago()));
         nuevoPedido.setIdMetodoPago(payMethod);
 
 
@@ -63,7 +64,7 @@ public class PedidoService {
         //Obtener el carrito del usuario y que este activo. El .get(0) especifica que solo se traiga la primera coincidencia
         List<Carrito> car = carritoRepository.findByIdUsuarioAndEstado(user, true);
         if (car.isEmpty()){
-            throw new EntityNotFoundException("No existe un carrito activo");
+            throw new EntityNotFoundException(Constantes.MENSAJE_CARRITO_NO_EXISTENTE_PARA_USUARIO+pedidoDto.getIdUsuario());
         }
         //Obtener el detalle del carrito
         List<DetalleCarrito> productos = detalleCarritoRepository.findByIdCarrito(car.get(0));
@@ -74,10 +75,10 @@ public class PedidoService {
             Producto idProducto = productoBd.getIdProducto();
             //Validar que exista el producto.
             Producto productoStock = productoRepository.findById(idProducto.getIdProducto())
-                    .orElseThrow(() -> new EntityNotFoundException("El producto con id " + idProducto.getIdProducto() + " no existe."));
+                    .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_PRODUCTO_NO_EXISTENTE + idProducto.getIdProducto()));
             //Validar que exista suficiente stock de determinado producto
             if (productoStock.getStock() < productoBd.getCantidad()){
-                throw new BadRequestException("La cantidad solicitad del producto " + idProducto.getIdProducto() + " no puede ser comprada porque excede el número de productos disponibles");
+                throw new BadRequestException(Constantes.MENSAJE_CANTIDAD_PRODUCTO_EXCESIVA + idProducto.getIdProducto());
             }else{
                 //Actualizar el stock de los productos en la BD.
                 productoStock.setStock(productoStock.getStock() - productoBd.getCantidad());
@@ -126,10 +127,10 @@ public class PedidoService {
 
     public List<PedidoDto> getPedidosPorUsuario(Integer idUsuario){
         Usuario user = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
         List<Pedido> order = pedidoRepository.findByIdUsuario(user);
         if (order.isEmpty()){
-            throw new EntityNotFoundException("No existe ningún pedido en el historial del usuario");
+            throw new EntityNotFoundException(Constantes.MENSAJE_PEDIDO_SIN_HISTORIAL);
         }
 
         List<PedidoDto> listaPedidos = new ArrayList<>();
@@ -156,10 +157,10 @@ public class PedidoService {
 
     public List<PedidoDto> getPedidosPorUsuarioYEstadoActivo(Integer idUsuario){
         Usuario user = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
         List<Pedido> order = pedidoRepository.findByIdUsuarioAndEstado(user, true);
         if (order.isEmpty()){
-            throw new EntityNotFoundException("No existe ningún pedido activo del usuario");
+            throw new EntityNotFoundException(Constantes.MENSAJE_PEDIDO_SIN_ACTIVOS);
         }
 
         List<PedidoDto> listaPedidos = new ArrayList<>();
@@ -189,7 +190,7 @@ public class PedidoService {
     public String putEstadoPedido(Integer idPedido){
         List<Pedido> order = pedidoRepository.findByIdPedidoAndEstado(idPedido, true);
         if (order.isEmpty()){
-            throw new EntityNotFoundException("El pedido especificado no existe o no está activo");
+            throw new EntityNotFoundException(Constantes.MENSAJE_PEDIDO_NO_EXISTENTE);
         }
 
         Pedido pedido = order.get(0);

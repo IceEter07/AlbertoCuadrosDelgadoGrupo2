@@ -3,9 +3,11 @@ package com.alberto.tienda.service;
 import com.alberto.tienda.data.MetodoPago;
 import com.alberto.tienda.data.Usuario;
 import com.alberto.tienda.data.dto.MetodoPagoDto;
+import com.alberto.tienda.data.dto.RespuestaGenerica;
 import com.alberto.tienda.exceptions.EntityNotFoundException;
 import com.alberto.tienda.repository.MetodoPagoRepository;
 import com.alberto.tienda.repository.UsuarioRepository;
+import com.alberto.tienda.utils.Constantes;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,44 +23,38 @@ public class MetodoPagoService {
     @Autowired
     UsuarioRepository usuarioRepository;
 
-    public MetodoPagoDto guardarMetodoPago(@Valid MetodoPagoDto metodoPagoDto){
-        MetodoPago nuevoMetodoPago = new MetodoPago();
+    public RespuestaGenerica guardarMetodoPago(@Valid MetodoPagoDto metodoPagoDto){
         Usuario user = usuarioRepository.findById(metodoPagoDto.getIdUsuario())
-                .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
+        RespuestaGenerica respuesta = new RespuestaGenerica();
+        MetodoPago nuevoMetodoPago = new MetodoPago();
+
         nuevoMetodoPago.setIdUsuario(user);
         nuevoMetodoPago.setNombre(metodoPagoDto.getNombre());
         nuevoMetodoPago.setDescripcion(metodoPagoDto.getDescripcion());
         metodoPagoRepository.save(nuevoMetodoPago);
-
         metodoPagoDto.setId(nuevoMetodoPago.getIdPago());
-        return metodoPagoDto;
+        respuesta.getDatos().add(metodoPagoDto);
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CAMPO_REGISTRADO_EXISTOSAMENTE);
+        return respuesta;
 
     }
 
-    public List<MetodoPagoDto> getMetodosPago(){
-        List<MetodoPagoDto> listaMetodosPago = new ArrayList<>();
-
-        for(MetodoPago payMethod: metodoPagoRepository.findAll()){
-            MetodoPagoDto metodoPagoDto = new MetodoPagoDto();
-            metodoPagoDto.setId(payMethod.getIdPago());
-            //Id del usuario (FK)
-            Usuario idUsuario = payMethod.getIdUsuario();
-            metodoPagoDto.setIdUsuario(idUsuario.getId());
-            metodoPagoDto.setNombre(payMethod.getNombre());
-            metodoPagoDto.setDescripcion(payMethod.getDescripcion());
-
-            listaMetodosPago.add(metodoPagoDto);
-        }
-        return listaMetodosPago;
-    }
-
-    public List<MetodoPagoDto> getMetodosPagoPorUsuario(Integer idUsuario){
+    public RespuestaGenerica getMetodosPagoPorUsuario(Integer idUsuario){
         Usuario user = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
 
-        List<MetodoPagoDto> listaMetodosPago = new ArrayList<>();
+        List<MetodoPago> metodosPago = metodoPagoRepository.findByIdUsuario(user);
+        if (metodosPago.isEmpty()){
+            throw new EntityNotFoundException(Constantes.MENSAJE_SIN_HISTORIAL_DE_METODOS_DE_PAGO);
+        }
 
-        for(MetodoPago payMethod: metodoPagoRepository.findByIdUsuario(user)){
+        //List<MetodoPagoDto> listaMetodosPago = new ArrayList<>();
+        RespuestaGenerica respuesta = new RespuestaGenerica();
+
+
+        for(MetodoPago payMethod: metodosPago){
             MetodoPagoDto metodoPagoDto = new MetodoPagoDto();
             metodoPagoDto.setId(payMethod.getIdPago());
             //Id del usuario (FK)
@@ -66,8 +62,10 @@ public class MetodoPagoService {
             metodoPagoDto.setNombre(payMethod.getNombre());
             metodoPagoDto.setDescripcion(payMethod.getDescripcion());
 
-            listaMetodosPago.add(metodoPagoDto);
+            respuesta.getDatos().add(metodoPagoDto);
         }
-        return listaMetodosPago;
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
+        return respuesta;
     }
 }

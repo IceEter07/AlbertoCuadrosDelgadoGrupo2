@@ -11,6 +11,7 @@ import com.alberto.tienda.repository.CarritoRepository;
 import com.alberto.tienda.repository.DetalleCarritoRepository;
 import com.alberto.tienda.repository.ProductoRepository;
 import com.alberto.tienda.repository.UsuarioRepository;
+import com.alberto.tienda.utils.Constantes;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,7 @@ public class CarritoService {
         // PRIMERA PARTE: rellenar la tabla carrito
         Carrito nuevoCarrito = new Carrito();
         Usuario user = usuarioRepository.findById(carritoDto.getIdUsuario())
-                .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
         nuevoCarrito.setIdUsuario(user);
         //nuevoCarrito.setTotal(carritoDto.getTotal());
         float totalCompra  = 0.0F;
@@ -44,7 +45,7 @@ public class CarritoService {
         // Calcular el total de la compra iterando en la lista de productos proporcionada
         for (ProductoAddDto productoJson: carritoDto.getProductos()){
             Producto productoBd = productoRepository.findById(productoJson.getIdProducto())
-                    .orElseThrow(() -> new EntityNotFoundException("El producto con id " + productoJson.getIdProducto()+ " no existe."));
+                    .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_PRODUCTO_NO_EXISTENTE + productoJson.getIdProducto()));
             // Calcular el total de la compra
             totalCompra += productoBd.getPrecioVenta() * productoJson.getCantidad();
             // Actualizar el Json para mantener informado al usuario
@@ -61,11 +62,11 @@ public class CarritoService {
 
         for (ProductoAddDto productoJson: carritoDto.getProductos()){
             Producto productoBd = productoRepository.findById(productoJson.getIdProducto())
-                    .orElseThrow(() -> new EntityNotFoundException("El producto con id " + productoJson.getIdProducto() + " no existe."));
+                    .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_PRODUCTO_NO_EXISTENTE + productoJson.getIdProducto()));
             DetalleCarrito detalleCarrito = new DetalleCarrito();
 
             Carrito idCarrito = carritoRepository.findById(nuevoCarrito.getIdCarrito())
-                    .orElseThrow(() -> new EntityNotFoundException("El carrito con id " + nuevoCarrito.getIdCarrito() + " no existe."));
+                    .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_CARRITO_NO_EXISTENTE + nuevoCarrito.getIdCarrito()));
             detalleCarrito.setIdCarrito(idCarrito);
             detalleCarrito.setIdProducto(productoBd);
             //Guardar los datos calculados
@@ -84,11 +85,11 @@ public class CarritoService {
 
     public List<CarritoDto> getCarritoPorUsuario(Integer idUsuario){
         Usuario user = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
 
         List<Carrito> findCarrito = carritoRepository.findByIdUsuarioAndEstado(user, true);
         if (findCarrito.isEmpty()){
-            throw new EntityNotFoundException("No existe ningún carrito activo para el usuario " + idUsuario);
+            throw new EntityNotFoundException(Constantes.MENSAJE_CARRITO_NO_EXISTENTE_PARA_USUARIO + idUsuario);
         }
 
         List<DetalleCarrito> productsCar = detalleCarritoRepository.findByIdCarrito(findCarrito.get(0));

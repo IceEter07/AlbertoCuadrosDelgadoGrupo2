@@ -4,9 +4,11 @@ import com.alberto.tienda.data.Direccion;
 import com.alberto.tienda.data.Usuario;
 import com.alberto.tienda.data.dto.DireccionDto;
 import com.alberto.tienda.data.dto.DireccionDto;
+import com.alberto.tienda.data.dto.RespuestaGenerica;
 import com.alberto.tienda.exceptions.EntityNotFoundException;
 import com.alberto.tienda.repository.DireccionRepository;
 import com.alberto.tienda.repository.UsuarioRepository;
+import com.alberto.tienda.utils.Constantes;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,10 +24,13 @@ public class DireccionService {
     @Autowired
     UsuarioRepository usuarioRepository;
 
-    public DireccionDto guardarDireccion(@Valid DireccionDto direccionDto){
-        Direccion nuevaDireccion = new Direccion();
+    public RespuestaGenerica guardarDireccion(@Valid DireccionDto direccionDto){
         Usuario user = usuarioRepository.findById(direccionDto.getIdUsuario())
-                .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
+
+        Direccion nuevaDireccion = new Direccion();
+        RespuestaGenerica respuesta = new RespuestaGenerica();
+
         nuevaDireccion.setIdUsuario(user);
         nuevaDireccion.setPais(direccionDto.getPais());
         nuevaDireccion.setEstado(direccionDto.getEstado());
@@ -37,13 +42,23 @@ public class DireccionService {
         direccionRepository.save(nuevaDireccion);
         direccionDto.setId(nuevaDireccion.getId());
 
-        return direccionDto;
+        respuesta.getDatos().add(direccionDto);
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CAMPO_REGISTRADO_EXISTOSAMENTE);
+
+        return respuesta;
     }
 
-    public List<DireccionDto> getDirecciones(){
-        List<DireccionDto> listaDirecciones = new ArrayList<>();
+    public RespuestaGenerica getDirecciones(){
+        List<Direccion> direccionnes = direccionRepository.findAll();
+        if (direccionnes.isEmpty()){
+            throw new EntityNotFoundException(Constantes.MENSAJE_SIN_HISTORIAL_DE_DIRECCIONES);
+        }
+
+        RespuestaGenerica respuesta = new RespuestaGenerica();
+        //List<DireccionDto> listaDirecciones = new ArrayList<>();
         
-        for(Direccion address: direccionRepository.findAll()){
+        for(Direccion address: direccionnes){
             DireccionDto direccionDto = new DireccionDto();
             direccionDto.setId(address.getId());
             //Id del usuario (FK)
@@ -57,18 +72,26 @@ public class DireccionService {
             direccionDto.setNumeroExt(address.getNumExt());
             direccionDto.setNumeroInt(address.getNumInt());
 
-            listaDirecciones.add(direccionDto);
+            respuesta.getDatos().add(direccionDto);
         }
-        return listaDirecciones;
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
+        return respuesta;
     }
 
-    public List<DireccionDto> getDireccionPorUsuario(Integer idUsuario){
+    public RespuestaGenerica getDireccionPorUsuario(Integer idUsuario){
         Usuario user = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
 
-        List<DireccionDto> listaDirecciones = new ArrayList<>();
+        //List<DireccionDto> listaDirecciones = new ArrayList<>();
+        RespuestaGenerica respuesta = new RespuestaGenerica();
 
-        for(Direccion address: direccionRepository.findByIdUsuario(user)){
+        List<Direccion> direccion = direccionRepository.findByIdUsuario(user);
+        if (direccion.isEmpty()){
+            throw new EntityNotFoundException(Constantes.MENSAJE_USUARIO_SIN_DIRECCION);
+        }
+
+        for(Direccion address: direccion){
             DireccionDto direccionDto = new DireccionDto();
             direccionDto.setId(address.getId());
             //Id del usuario (FK)
@@ -82,8 +105,10 @@ public class DireccionService {
             direccionDto.setNumeroExt(address.getNumExt());
             direccionDto.setNumeroInt(address.getNumInt());
 
-            listaDirecciones.add(direccionDto);
+            respuesta.getDatos().add(direccionDto);
         }
-        return listaDirecciones;
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
+        return respuesta;
     }
 }

@@ -17,7 +17,9 @@ public class TiendaDto {
     @Positive(message = "Debe ingresar un usuario valido")
     private Integer idUsuario;
     @NotBlank(message = "Debe ingresar un RFC")
-    @Size(message = "El número de caracteres en el RFC no es el correcto", max = 13, min = 13)
+    @Size(message = "El número de caracteres en el RFC no es el correcto", max = 13, min = 12)
+    //@Pattern genérico para validar RFC de distintos países.
+    @Pattern(regexp = "^[a-zA-Z0-9@#$%^&+=!_.-]*$", message = "El RFC no tiene el formato adecuado)")
     private String rfc;
     @NotNull(message = "Debe ingresar el nombre de la empresa")
     @Size(message = "Se excedió el número de caracteres en el nombre de la empresa (max 45)", max = 45)

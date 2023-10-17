@@ -20,5 +20,5 @@ public class UsuarioRol {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "usuarios_id_usuario", nullable = false)
-    private Usuario IdUsuario;
+    private Usuario idUsuario;
 }

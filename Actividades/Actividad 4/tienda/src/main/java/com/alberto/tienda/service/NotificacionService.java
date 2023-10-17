@@ -3,12 +3,17 @@ package com.alberto.tienda.service;
 import com.alberto.tienda.data.Notificacion;
 import com.alberto.tienda.data.Usuario;
 import com.alberto.tienda.data.dto.NotificacionDto;
+import com.alberto.tienda.data.dto.RespuestaGenerica;
 import com.alberto.tienda.data.dto.UsuarioDto;
 import com.alberto.tienda.exceptions.EntityNotFoundException;
 import com.alberto.tienda.repository.NotificacionRepository;
 import com.alberto.tienda.repository.UsuarioRepository;
+import com.alberto.tienda.utils.Constantes;
 import jakarta.validation.Valid;
+import org.apache.coyote.Response;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,44 +30,66 @@ public class NotificacionService {
     @Autowired
     UsuarioRepository usuarioRepository;
 
-    public NotificacionDto guardarNotificacion(@Valid NotificacionDto notificacionDto){
-        Notificacion nuevaNotificacion = new Notificacion();
+    public RespuestaGenerica guardarNotificacion(@Valid NotificacionDto notificacionDto){
         //Usuario user = usuarioRepository.getReferenceById(notificacionDto.getIdUsuario());
         Usuario user = usuarioRepository.findById(notificacionDto.getIdUsuario())
-                .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
+
+        RespuestaGenerica respuesta = new RespuestaGenerica();
+
+        Notificacion nuevaNotificacion = new Notificacion();
+        //Usuario getIdUser = usuarioRepository.getReferenceById(notificacionDto.getIdUsuario());
+
         nuevaNotificacion.setIdUsuario(user);
         nuevaNotificacion.setMensaje(notificacionDto.getMensaje());
         nuevaNotificacion.setFecha(new Date());
         notificacionRepository.save(nuevaNotificacion);
+        respuesta.setExito(true);
+        respuesta.getDatos().add(notificacionDto);
+        respuesta.setMensaje(Constantes.MENSAJE_CAMPO_REGISTRADO_EXISTOSAMENTE);
+
         //Obtener la fecha y el ID de la notificación.
         notificacionDto.setFecha(nuevaNotificacion.getFecha());
         notificacionDto.setId(nuevaNotificacion.getId());
-        return notificacionDto;
+        return respuesta;
     }
 
     //Obtener notificaciones por cada usuario.
-    //Se deja comentado porque aun no sabemos como validar al 100% cuando no existe el usuario
-    public List<NotificacionDto> getNotificacionPorUsuario(Integer idUsuario){
+    public RespuestaGenerica getNotificacionPorUsuario(Integer idUsuario){
         Usuario user = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
 
-        List<NotificacionDto> listaNotificaciones = new ArrayList<>();
+        List<Notificacion> notificaciones = notificacionRepository.findByIdUsuario(user);
+        if (notificaciones.isEmpty()){
+            throw new EntityNotFoundException(Constantes.MENSAJE_NOTIFICACION_NO_EXISTENTE);
+        }
 
-        for(Notificacion notify: notificacionRepository.findByIdUsuario(user)){
+        RespuestaGenerica respuesta = new RespuestaGenerica();
+
+        for(Notificacion notify: notificaciones){
             NotificacionDto notificacionDto = new NotificacionDto();
             notificacionDto.setId(notify.getId());
             notificacionDto.setIdUsuario(idUsuario);
             notificacionDto.setMensaje(notify.getMensaje());
             notificacionDto.setFecha(notify.getFecha());
 
-            listaNotificaciones.add(notificacionDto);
+            respuesta.getDatos().add(notificacionDto);
         }
-        return  listaNotificaciones;
+
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
+
+        return respuesta;
     }
 
     //Obtener todas las notificaciones
-    public List<NotificacionDto> getNotificaciones(){
-        List<NotificacionDto> listaNotificaciones = new ArrayList<>();
+    public RespuestaGenerica getNotificaciones(){
+        List<Notificacion> notificaciones = notificacionRepository.findAll();
+        if (notificaciones.isEmpty()){
+            throw new EntityNotFoundException(Constantes.MENSAJE_NOTIFICACION_NO_EXISTENTE);
+        }
+
+        RespuestaGenerica respuesta = new RespuestaGenerica();
 
         for(Notificacion notify: notificacionRepository.findAll()){
             NotificacionDto notificacionDto = new NotificacionDto();
@@ -73,8 +100,10 @@ public class NotificacionService {
             notificacionDto.setMensaje(notify.getMensaje());
             notificacionDto.setFecha(notify.getFecha());
 
-            listaNotificaciones.add(notificacionDto);
+            respuesta.getDatos().add(notificacionDto);
         }
-        return  listaNotificaciones;
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
+        return  respuesta;
     }
 }

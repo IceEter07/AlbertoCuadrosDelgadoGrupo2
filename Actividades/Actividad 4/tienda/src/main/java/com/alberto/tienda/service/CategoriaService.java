@@ -4,6 +4,7 @@ import com.alberto.tienda.data.Categoria;
 import com.alberto.tienda.data.dto.CategoriaDto;
 import com.alberto.tienda.exceptions.BadRequestException;
 import com.alberto.tienda.repository.CategoriaRepository;
+import com.alberto.tienda.utils.Constantes;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,7 @@ public class CategoriaService {
             categoriaDto.setId(nuevaCategoria.getIdCategoria());
         }
         else{
-            throw new BadRequestException("La categoría ya fue registrada");
+            throw new BadRequestException(Constantes.MENSAJE_CATEGORIA_YA_REGISTRADA);
         }
 
         return  categoriaDto;

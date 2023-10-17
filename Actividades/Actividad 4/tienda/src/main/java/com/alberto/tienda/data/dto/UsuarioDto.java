@@ -30,7 +30,7 @@ public class UsuarioDto{
     @Email(message = "Ingresa un email valido")
     String email;
     @NotNull(message = "Debe ingresar una contraseña")
-    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#$%^&+=!_.])(?=\\S+$).{8,}$", message = "La contraseña no cumple con los requisitos de seguridad")
+    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#$%^&+=!_.])(?=\\S+$).{8,}$", message = "La contraseña no cumple con los requisitos de seguridad:  minimo 1: mayuscula, minuscula, numero, caracter especial; 8 caracteres; sin espacios.")
     String pass;
     //List<RolAddDto> rolUsuario;
 
