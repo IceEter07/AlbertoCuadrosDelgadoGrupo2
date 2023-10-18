@@ -2,6 +2,7 @@ package com.alberto.tienda.service;
 
 import com.alberto.tienda.data.*;
 import com.alberto.tienda.data.dto.PedidoDto;
+import com.alberto.tienda.data.dto.RespuestaGenerica;
 import com.alberto.tienda.exceptions.BadRequestException;
 import com.alberto.tienda.exceptions.EntityNotFoundException;
 import com.alberto.tienda.repository.*;
@@ -41,21 +42,26 @@ public class PedidoService {
     @Autowired
     ProductoRepository productoRepository;
 
-    public PedidoDto savePedido(@Valid PedidoDto pedidoDto){
+    public RespuestaGenerica savePedido(@Valid PedidoDto pedidoDto){
         //PRIMERA PARTE: llenar la tabla de pedidos
         Pedido nuevoPedido = new Pedido();
+        RespuestaGenerica respuesta = new RespuestaGenerica();
         //Obtener el ID del usuario (FK)
         Usuario user = usuarioRepository.findById(pedidoDto.getIdUsuario())
                 .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
         nuevoPedido.setIdUsuario(user);
         //Obtener el ID de la dirección (FK)
-        Direccion address = direccionRepository.findById(pedidoDto.getIdDireccion())
-                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_DIRECCION_NO_EXISTENTE+pedidoDto.getIdDireccion()));
-        nuevoPedido.setIdDireccion(address);
+        List<Direccion> address = direccionRepository.findByIdAndIdUsuario(pedidoDto.getIdDireccion(), user);
+        if (address.isEmpty()){
+            throw new EntityNotFoundException(Constantes.MENSAJE_USUARIO_DIRECCION_NO_REGISTRADA);
+        }
+        nuevoPedido.setIdDireccion(address.get(0));
         //Obtener el ID del MétodoPago (FK)
-        MetodoPago payMethod = metodoPagoRepository.findById(pedidoDto.getIdPago())
-                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_METODO_PAGO_NO_EXISTENTE+pedidoDto.getIdPago()));
-        nuevoPedido.setIdMetodoPago(payMethod);
+        List<MetodoPago> payMethod = metodoPagoRepository.findByIdPagoAndIdUsuario(pedidoDto.getIdPago(), user);
+        if (payMethod.isEmpty()){
+            throw new EntityNotFoundException(Constantes.MENSAJE_USUARIO_METODO_PAGO_NO_REGISTRADO);
+        }
+        nuevoPedido.setIdMetodoPago(payMethod.get(0));
 
 
         float impuesto = 0.16F;
@@ -86,6 +92,7 @@ public class PedidoService {
             }
             // Sumar el precio de los productos para calcular el total
             totalCompraNeta += productoBd.getPrecio() * productoBd.getCantidad();
+
         }
 
         nuevoPedido.setFechaPedido(new Date());
@@ -119,13 +126,15 @@ public class PedidoService {
         pedidoDto.setImpuesto(nuevoPedido.getImpuesto());
         pedidoDto.setTotal(nuevoPedido.getTotal());
 
-        return pedidoDto;
+        respuesta.getDatos().add(pedidoDto);
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_PETICION_EXITOSA);
+        return respuesta;
 
 
     }
 
-
-    public List<PedidoDto> getPedidosPorUsuario(Integer idUsuario){
+    public RespuestaGenerica getPedidosPorUsuario(Integer idUsuario){
         Usuario user = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
         List<Pedido> order = pedidoRepository.findByIdUsuario(user);
@@ -133,7 +142,7 @@ public class PedidoService {
             throw new EntityNotFoundException(Constantes.MENSAJE_PEDIDO_SIN_HISTORIAL);
         }
 
-        List<PedidoDto> listaPedidos = new ArrayList<>();
+        RespuestaGenerica respuesta = new RespuestaGenerica();
 
         for (Pedido pedido: order){
             PedidoDto pedidoDto = new PedidoDto();
@@ -150,12 +159,14 @@ public class PedidoService {
             pedidoDto.setImpuesto(pedido.getImpuesto());
             pedidoDto.setTotal(pedido.getTotal());
 
-            listaPedidos.add(pedidoDto);
+            respuesta.getDatos().add(pedidoDto);
         }
-        return listaPedidos;
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
+        return respuesta;
     }
 
-    public List<PedidoDto> getPedidosPorUsuarioYEstadoActivo(Integer idUsuario){
+    public RespuestaGenerica getPedidosPorUsuarioYEstadoActivo(Integer idUsuario){
         Usuario user = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
         List<Pedido> order = pedidoRepository.findByIdUsuarioAndEstado(user, true);
@@ -163,7 +174,7 @@ public class PedidoService {
             throw new EntityNotFoundException(Constantes.MENSAJE_PEDIDO_SIN_ACTIVOS);
         }
 
-        List<PedidoDto> listaPedidos = new ArrayList<>();
+        RespuestaGenerica respuesta = new RespuestaGenerica();
 
         for (Pedido pedido: order){
             PedidoDto pedidoDto = new PedidoDto();
@@ -180,23 +191,29 @@ public class PedidoService {
             pedidoDto.setImpuesto(pedido.getImpuesto());
             pedidoDto.setTotal(pedido.getTotal());
 
-            listaPedidos.add(pedidoDto);
+            respuesta.getDatos().add(pedidoDto);
         }
-        return listaPedidos;
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
+        return respuesta;
     }
 
     //Intento de método de actualizar el estado del pedido
     //NOTA: solo se creó el método para experimentar.
-    public String putEstadoPedido(Integer idPedido){
+    public RespuestaGenerica putEstadoPedido(Integer idPedido){
         List<Pedido> order = pedidoRepository.findByIdPedidoAndEstado(idPedido, true);
         if (order.isEmpty()){
             throw new EntityNotFoundException(Constantes.MENSAJE_PEDIDO_NO_EXISTENTE);
         }
 
+        RespuestaGenerica respuesta = new RespuestaGenerica();
         Pedido pedido = order.get(0);
         pedido.setEstado(false);
         pedidoRepository.save(pedido);
 
-        return "El estado del pedido " + pedido.getIdPedido() + " ha sido actualizado satisfactoriamente";
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_PETICION_EXITOSA);
+
+        return respuesta;
     }
 }

@@ -47,6 +47,7 @@ public class ProductoService {
         if (!(findProductoNombreYCodigo.isEmpty())) {
 
             Producto actualizarProducto = findProductoNombreYCodigo.get(0);
+
             actualizarProducto.setPrecioVenta(productoDto.getPrecio());
             actualizarProducto.setStock(productoDto.getNumeroProductos() + actualizarProducto.getStock());
             productoRepository.save(actualizarProducto);
@@ -55,7 +56,7 @@ public class ProductoService {
             productoDto.setPrecio(actualizarProducto.getPrecioVenta());
             productoDto.setNombre(actualizarProducto.getNombre());
             productoDto.setNumeroProductos(actualizarProducto.getStock());
-            respuesta.setMensaje(Constantes.MENSAJE_PRODUCTO_ACTUALIZADO_EXISTOSAMENTE);
+            respuesta.setMensaje(Constantes.MENSAJE_PRODUCTO_ACTUALIZADO_EXITOSAMENTE);
         } else {
 
             nuevoProducto.setIdCategoria(category);
