@@ -5,6 +5,7 @@ import com.alberto.tienda.data.Producto;
 import com.alberto.tienda.data.Tienda;
 import com.alberto.tienda.data.dto.ProductoDto;
 import com.alberto.tienda.data.dto.RespuestaGenerica;
+import com.alberto.tienda.exceptions.BadRequestException;
 import com.alberto.tienda.exceptions.EntityNotFoundException;
 import com.alberto.tienda.repository.CategoriaRepository;
 import com.alberto.tienda.repository.ProductoRepository;
@@ -43,20 +44,23 @@ public class ProductoService {
 
         //Validar que el producto NO exista
         //Sí existe, se actualizan los campos precio y stock (a este último se le suman las nuevas existencias).
-        List<Producto> findProductoNombreYCodigo = productoRepository.findByIdTiendaAndCodigo(shop, productoDto.getCodigo());
-        if (!(findProductoNombreYCodigo.isEmpty())) {
+        List<Producto> findProductoTiendaYCodigo = productoRepository.findByIdTiendaAndCodigo(shop, productoDto.getCodigo());
+        if (!(findProductoTiendaYCodigo.isEmpty())) {
+            throw new BadRequestException(Constantes.MENSAJE_PRODUCTO_TIENDA_YA_REGISTRADO+shop.getIdTienda()+Constantes.MENSAJE_PRODUCTO_CODIGO_YA_REGISTRADO+productoDto.getCodigo());
 
-            Producto actualizarProducto = findProductoNombreYCodigo.get(0);
-
-            actualizarProducto.setPrecioVenta(productoDto.getPrecio());
-            actualizarProducto.setStock(productoDto.getNumeroProductos() + actualizarProducto.getStock());
-            productoRepository.save(actualizarProducto);
-            productoDto.setId(actualizarProducto.getIdProducto());
-            //Mantener actualizado el stock
-            productoDto.setPrecio(actualizarProducto.getPrecioVenta());
-            productoDto.setNombre(actualizarProducto.getNombre());
-            productoDto.setNumeroProductos(actualizarProducto.getStock());
-            respuesta.setMensaje(Constantes.MENSAJE_PRODUCTO_ACTUALIZADO_EXITOSAMENTE);
+            //El bloque de codigo comentado puede ser utilizado para actualizar productos.
+            //De momento se deja comentado para su futura implementacion
+//            Producto actualizarProducto = findProductoNombreYCodigo.get(0);
+//
+//            actualizarProducto.setPrecioVenta(productoDto.getPrecio());
+//            actualizarProducto.setStock(productoDto.getNumeroProductos() + actualizarProducto.getStock());
+//            productoRepository.save(actualizarProducto);
+//            productoDto.setId(actualizarProducto.getIdProducto());
+//            //Mantener actualizado el stock
+//            productoDto.setPrecio(actualizarProducto.getPrecioVenta());
+//            productoDto.setNombre(actualizarProducto.getNombre());
+//            productoDto.setNumeroProductos(actualizarProducto.getStock());
+//            respuesta.setMensaje(Constantes.MENSAJE_PRODUCTO_ACTUALIZADO_EXITOSAMENTE);
         } else {
 
             nuevoProducto.setIdCategoria(category);
@@ -69,12 +73,10 @@ public class ProductoService {
             productoRepository.save(nuevoProducto);
             productoDto.setId(nuevoProducto.getIdProducto());
             respuesta.setMensaje(Constantes.MENSAJE_CAMPO_REGISTRADO_EXISTOSAMENTE);
+
+            respuesta.getDatos().add(productoDto);
+            respuesta.setExito(true);
         }
-
-        respuesta.getDatos().add(productoDto);
-        respuesta.setExito(true);
-
-
         return respuesta;
     }
 

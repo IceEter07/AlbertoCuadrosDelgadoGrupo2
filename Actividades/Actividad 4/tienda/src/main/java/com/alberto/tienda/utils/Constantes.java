@@ -28,11 +28,13 @@ public class Constantes {
     public static final String MENSAJE_RFC_YA_REGISTRADO = "El RFC ya esta registrado";
     public static final String MENSAJE_NOMBRE_TIENDA_YA_REGISTRADO = "Ya existe una tienda con ese nombre";
     public static final String MENSAJE_CARRITO_YA_REGISTRADO = "Ya existe una carrito activo para el usuario con id ";
+    public static final String MENSAJE_PRODUCTO_TIENDA_YA_REGISTRADO = "La tienda con id ";
+    public static final String MENSAJE_PRODUCTO_CODIGO_YA_REGISTRADO = " ya tiene registrado un producto con el codigo ";
 
     //REGISTROS EXITOSOS VARIADOS
     public static final String MENSAJE_USUARIO_REGISTRADO_EXISTOSAMENTE = "Usuario registrado con exito. ID asignado: ";
-    public static final String MENSAJE_PRODUCTO_ACTUALIZADO_EXITOSAMENTE = "El producto se actualizo correctamente. El codigo y el ID de la tienda proporcionados coincidieron con registro ya existente en el servidor";
-    public static final String MENSAJE_CARRITO_ACTUALIZADO_EXITOSAMENTE = "El carrito se actualizo correctamente. Los datos nuevos se insertaron, mientras que a los existentes se les actualizó la cantidad y el total";
+    public static final String MENSAJE_PRODUCTO_ACTUALIZADO_EXITOSAMENTE = "El producto se actualizo correctamente. El codigo y el ID de la tienda proporcionados coincidieron con un registro ya existente en el servidor";
+    public static final String MENSAJE_CARRITO_PRODUCTOS_INSERTADOS_EXITOSAMENTE = "Los productos fueron agregados y/o actualizados en el carrito del usuario correctamente. En este mensaje solo se muestran los productos ingresados en la petición POST. Para comprobar todos los productos del carrito haga la peticion GET al endpoint adecuado.";
 
     //REGISTROS EXITOSOS GENERICOS
     public static final String MENSAJE_CAMPO_REGISTRADO_EXISTOSAMENTE = "El registro se realizo con exito.";
@@ -53,6 +55,14 @@ public class Constantes {
     public static final String MENSAJE_PEDIDO_SIN_ACTIVOS = "No existe ningún pedido activo del usuario";
     public static final String MENSAJE_CONSULTA_EXITOSA = "La consulta se realizo con exito";
     public static final String MENSAJE_CONSULTA_FALLIDA = "La consulta no se realizo con exito";
+
+
+
+
+    //EXCEPCIONES
+    public static final String MENSAJE_EXCEPCION_TIPO_PARAMETRO_INCORRECTO = "Ocurrió un error. La solicitud no se pudo completar porque el parametro ";
+    public static final String MENSAJE_EXCEPCION_TIPO_PARAMETRO_INCORRECTO_COMPLEMENTO = " no es de tipo ";
+    public static final String MENSAJE_EXCEPCION_BODY_INCORRECTO = "Ocurió un problema. La solicitud no se pudo completar porque el mensaje del cuerpo de la solicitud esta mal formado. Verifica la estructura del mensaje";
 
 
 }

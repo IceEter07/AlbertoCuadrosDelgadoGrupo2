@@ -22,7 +22,7 @@ public class CarritoController {
     CarritoService carritoService;
 
     @GetMapping("/obtenerCarritoUsuario/{idUsuario}")
-    public ResponseEntity<RespuestaGenerica> getCarDetails(@PathVariable Integer idUsuario){
+    public ResponseEntity<RespuestaGenerica> getCarDetails(@Valid @PathVariable Integer idUsuario){
         RespuestaGenerica respuesta = carritoService.getCarritoPorUsuario(idUsuario);
         HttpStatus status = null;
         if (respuesta.isExito()){
