@@ -3,11 +3,16 @@ package com.alberto.tienda.service;
 import com.alberto.tienda.data.Rol;
 import com.alberto.tienda.data.Usuario;
 import com.alberto.tienda.data.UsuarioRol;
-import com.alberto.tienda.data.dto.RolAddDto;
+import com.alberto.tienda.data.dto.RespuestaGenerica;
 import com.alberto.tienda.data.dto.UsuarioDto;
+import com.alberto.tienda.exceptions.BadRequestException;
+import com.alberto.tienda.exceptions.EntityNotFoundException;
 import com.alberto.tienda.repository.RolRepository;
 import com.alberto.tienda.repository.UsuarioRepository;
 import com.alberto.tienda.repository.UsuarioRolRepository;
+import com.alberto.tienda.utils.Constantes;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,10 +31,14 @@ public class UsuarioService {
     @Autowired
     RolRepository rolRepository;
 
-    public List<UsuarioDto> getUsuarios(){
-        List<UsuarioDto> listaUsuarios = new ArrayList<>();
+    public RespuestaGenerica getUsuarios(){
+        List<Usuario> users = usuarioRepository.findAll();
+        if (users.isEmpty()){
+            throw new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE);
+        }
+        RespuestaGenerica respuesta  = new RespuestaGenerica();
 
-        for(Usuario user: usuarioRepository.findAll()){
+        for(Usuario user: users){
             UsuarioDto usuarioDto = new UsuarioDto();
             usuarioDto.setId(user.getId());
             usuarioDto.setNombre(user.getNombre());
@@ -39,12 +48,37 @@ public class UsuarioService {
             usuarioDto.setEmail(user.getEmail());
             usuarioDto.setPass(user.getPass());
 
-            listaUsuarios.add(usuarioDto);
+            respuesta.getDatos().add(usuarioDto);
         }
-        return listaUsuarios;
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
+
+        return respuesta;
     }
 
-    public UsuarioDto guardarUsuario(UsuarioDto usuarioDto){
+    public RespuestaGenerica getUsuario(Integer idUsuario) {
+
+        Usuario user = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
+
+        RespuestaGenerica respuesta = new RespuestaGenerica();
+            UsuarioDto usuarioDto = new UsuarioDto();
+            usuarioDto.setId(user.getId());
+            usuarioDto.setNombre(user.getNombre());
+            usuarioDto.setApPat(user.getApPat());
+            usuarioDto.setApMat(user.getApMat());
+            usuarioDto.setTelefono(user.getTelefono());
+            usuarioDto.setEmail(user.getEmail());
+            usuarioDto.setPass(user.getPass());
+
+            respuesta.getDatos().add(usuarioDto);
+            respuesta.setExito(true);
+            respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
+        return respuesta;
+    }
+    @Transactional
+    public RespuestaGenerica guardarUsuario(@Valid UsuarioDto usuarioDto){
+        RespuestaGenerica respuesta = new RespuestaGenerica();
         Usuario usuario = new Usuario();
         usuario.setNombre(usuarioDto.getNombre());
         usuario.setApPat(usuarioDto.getApPat());
@@ -53,22 +87,34 @@ public class UsuarioService {
         usuario.setEmail(usuarioDto.getEmail());
         usuario.setPass(usuarioDto.getPass());
 
-        usuario = usuarioRepository.save(usuario);
-        usuarioDto.setId(usuario.getId());
+        //Comprobar que el usuario No este registrado.
+        List<Usuario> findEmail = usuarioRepository.findByEmail(usuarioDto.getEmail());
+        if(findEmail.isEmpty()){
+            usuario = usuarioRepository.save(usuario);
+            usuarioDto.setId(usuario.getId());
+            respuesta.setExito(true);
+            respuesta.getDatos().add(usuarioDto);
+            respuesta.setMensaje(Constantes.MENSAJE_USUARIO_REGISTRADO_EXISTOSAMENTE+usuarioDto.getId());
+        }
+        else{
+            throw new BadRequestException(Constantes.MENSAJE_EMAIL_YA_REGISTRADO);
+        }
 
         //Asignar el rol al usuario automaticamente
-        Rol rolBd = rolRepository.getReferenceById(1);
+        //Buscar si existe el rol "comprador", sí no esta se crea.
+        List<Rol> rolBD = rolRepository.findByNombre("comprador");
+        if (rolBD.isEmpty()){
+            Rol nuevoRol = new Rol();
+            nuevoRol.setNombre("comprador");
+            rolRepository.save(nuevoRol);
+        }
+
+        Rol rolBd = rolRepository.findByNombre("comprador").get(0);
         UsuarioRol usuarioRol = new UsuarioRol();
-        // Hacer que el rol sea el 1 por defecto (que sea comprador)
         usuarioRol.setIdRol(rolBd);
         usuarioRol.setIdUsuario(usuario);
         usuarioRolRepository.save(usuarioRol);
 
-        return usuarioDto;
-    }
-
-    private Rol buscarRolPorId(int idRol){
-        Rol rol = rolRepository.getReferenceById(idRol);
-        return rol;
+        return respuesta;
     }
 }
