@@ -13,7 +13,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Validated
-public class ResenasDto {
+public class ResenaDto {
     private Integer id;
     @NotNull(message = "Debe ingresar un usuario")
     @Positive(message = "Debe ingresar un usuario valido")
@@ -26,7 +26,7 @@ public class ResenasDto {
     private String comentario;
     private Date fecha;
 
-    public ResenasDto(){
+    public ResenaDto(){
 
     }
 
