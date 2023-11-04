@@ -37,7 +37,7 @@ public class DireccionDto {
     @Positive(message = "Debe ingresar un número válido")
     private Integer numeroExt;
     @NotNull(message = "Debe ingresar un número interior")
-    @Positive(message = "Debe ingresar un número interior válido")
+    @Min(value = 0, message = "Debe ingresar un número interior válido")
     private Integer numeroInt;
 
     public DireccionDto(){

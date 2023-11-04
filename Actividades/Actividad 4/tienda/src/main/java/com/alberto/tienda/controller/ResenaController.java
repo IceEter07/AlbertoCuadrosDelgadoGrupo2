@@ -1,6 +1,6 @@
 package com.alberto.tienda.controller;
 
-import com.alberto.tienda.data.dto.ResenasDto;
+import com.alberto.tienda.data.dto.ResenaDto;
 import com.alberto.tienda.data.dto.RespuestaGenerica;
 import com.alberto.tienda.service.ResenasService;
 import jakarta.validation.Valid;
@@ -9,8 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/resena")
@@ -51,8 +49,8 @@ public class ResenaController {
     }
 
     @PostMapping("/guardarResena")
-    public ResponseEntity<RespuestaGenerica> saveComment(@Valid @RequestBody ResenasDto resenasDto){
-        RespuestaGenerica respuesta = resenasService.guardarResena(resenasDto);
+    public ResponseEntity<RespuestaGenerica> saveComment(@Valid @RequestBody ResenaDto resenaDto){
+        RespuestaGenerica respuesta = resenasService.guardarResena(resenaDto);
         HttpStatus status = null;
         if (respuesta.isExito()){
             status = HttpStatus.OK;
