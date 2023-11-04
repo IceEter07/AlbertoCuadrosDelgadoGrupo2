@@ -3,7 +3,7 @@ package com.alberto.tienda.service;
 import com.alberto.tienda.data.Producto;
 import com.alberto.tienda.data.Resena;
 import com.alberto.tienda.data.Usuario;
-import com.alberto.tienda.data.dto.ResenasDto;
+import com.alberto.tienda.data.dto.ResenaDto;
 import com.alberto.tienda.data.dto.RespuestaGenerica;
 import com.alberto.tienda.exceptions.EntityNotFoundException;
 import com.alberto.tienda.repository.ProductoRepository;
@@ -14,7 +14,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -30,25 +29,25 @@ public class ResenasService {
     @Autowired
     ProductoRepository productoRepository;
 
-    public RespuestaGenerica guardarResena(@Valid ResenasDto resenasDto){
+    public RespuestaGenerica guardarResena(@Valid ResenaDto resenaDto){
         //ID del usuario
-        Usuario user = usuarioRepository.findById(resenasDto.getIdUsuario())
+        Usuario user = usuarioRepository.findById(resenaDto.getIdUsuario())
                 .orElseThrow(() -> new EntityNotFoundException("El usuario no existe"));
         //ID del producto
-        Producto product = productoRepository.findById(resenasDto.getIdProducto())
-                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_PRODUCTO_NO_EXISTENTE+resenasDto.getIdProducto()));
+        Producto product = productoRepository.findById(resenaDto.getIdProducto())
+                .orElseThrow(() -> new EntityNotFoundException(Constantes.MENSAJE_PRODUCTO_NO_EXISTENTE+ resenaDto.getIdProducto()));
 
         Resena nuevaResena = new Resena();
         RespuestaGenerica respuesta = new RespuestaGenerica();
 
         nuevaResena.setIdUsuario(user);
         nuevaResena.setIdProducto(product);
-        nuevaResena.setComentario(resenasDto.getComentario());
+        nuevaResena.setComentario(resenaDto.getComentario());
         nuevaResena.setFecha(new Date());
         resenaRepository.save(nuevaResena);
-        resenasDto.setId(nuevaResena.getIdResena());
-        resenasDto.setFecha(nuevaResena.getFecha());
-        respuesta.getDatos().add(resenasDto);
+        resenaDto.setId(nuevaResena.getIdResena());
+        resenaDto.setFecha(nuevaResena.getFecha());
+        respuesta.getDatos().add(resenaDto);
 
         respuesta.setExito(true);
         respuesta.setMensaje(Constantes.MENSAJE_CAMPO_REGISTRADO_EXISTOSAMENTE);
@@ -67,17 +66,17 @@ public class ResenasService {
         RespuestaGenerica respuesta = new RespuestaGenerica();
 
         for (Resena comment: resenasProductos){
-            ResenasDto resenasDto = new ResenasDto();
-            resenasDto.setId(comment.getIdResena());
+            ResenaDto resenaDto = new ResenaDto();
+            resenaDto.setId(comment.getIdResena());
             //Obtener el ID del usuario
             Usuario idUsuario = comment.getIdUsuario();
-            resenasDto.setIdUsuario(idUsuario.getId());
+            resenaDto.setIdUsuario(idUsuario.getId());
             //Obtener el ID del producto
-            resenasDto.setIdProducto(idProducto);
-            resenasDto.setComentario(comment.getComentario());
-            resenasDto.setFecha(comment.getFecha());
+            resenaDto.setIdProducto(idProducto);
+            resenaDto.setComentario(comment.getComentario());
+            resenaDto.setFecha(comment.getFecha());
 
-            respuesta.getDatos().add(resenasDto);
+            respuesta.getDatos().add(resenaDto);
         }
         respuesta.setExito(true);
         respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
@@ -95,17 +94,17 @@ public class ResenasService {
         RespuestaGenerica respuesta = new RespuestaGenerica();
 
         for (Resena comment: resenasUsuarios){
-            ResenasDto resenasDto = new ResenasDto();
-            resenasDto.setId(comment.getIdResena());
+            ResenaDto resenaDto = new ResenaDto();
+            resenaDto.setId(comment.getIdResena());
             //Obtener el ID del usuario
-            resenasDto.setIdUsuario(idUsuario);
+            resenaDto.setIdUsuario(idUsuario);
             //Obtener el ID del producto
             Producto idProducto = comment.getIdProducto();
-            resenasDto.setIdProducto(idProducto.getIdProducto());
-            resenasDto.setComentario(comment.getComentario());
-            resenasDto.setFecha(comment.getFecha());
+            resenaDto.setIdProducto(idProducto.getIdProducto());
+            resenaDto.setComentario(comment.getComentario());
+            resenaDto.setFecha(comment.getFecha());
 
-            respuesta.getDatos().add(resenasDto);
+            respuesta.getDatos().add(resenaDto);
         }
         respuesta.setExito(true);
         respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
