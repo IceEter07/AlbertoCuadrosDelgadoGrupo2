@@ -31,15 +31,15 @@ public class RolService {
         nuevoRol.setNombre(rolDto.getNombre());
         List<Rol> findRol = rolRepository.findByNombre(rolDto.getNombre());
         //Comprobar que el rol no exista
-        if (findRol.isEmpty()){
+        if (!(findRol.isEmpty())){
+            throw new BadRequestException(Constantes.MENSAJE_ROL_YA_REGISTRADO);
+        }
+        else {
             rolRepository.save(nuevoRol);
             rolDto.setId(nuevoRol.getId());
             respuesta.getDatos().add(rolDto);
             respuesta.setExito(true);
             respuesta.setMensaje(Constantes.MENSAJE_CAMPO_REGISTRADO_EXISTOSAMENTE);
-        }
-        else {
-            throw new BadRequestException(Constantes.MENSAJE_ROL_YA_REGISTRADO);
         }
         return respuesta;
     }

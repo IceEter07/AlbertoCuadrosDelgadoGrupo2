@@ -2,7 +2,7 @@ package com.alberto.tienda.controller;
 
 import com.alberto.tienda.data.dto.ResenaDto;
 import com.alberto.tienda.data.dto.RespuestaGenerica;
-import com.alberto.tienda.service.ResenasService;
+import com.alberto.tienda.service.ResenaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class ResenaController {
 
     @Autowired
-    ResenasService resenasService;
+    ResenaService resenasService;
 
     @GetMapping("/obtenerResenasProducto/{idProducto}")
     public ResponseEntity<RespuestaGenerica> getCommentsProducts(@PathVariable Integer idProducto){
