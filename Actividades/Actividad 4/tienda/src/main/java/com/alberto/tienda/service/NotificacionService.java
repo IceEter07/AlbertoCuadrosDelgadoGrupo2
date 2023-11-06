@@ -91,7 +91,7 @@ public class NotificacionService {
 
         RespuestaGenerica respuesta = new RespuestaGenerica();
 
-        for(Notificacion notify: notificacionRepository.findAll()){
+        for(Notificacion notify: notificaciones){
             NotificacionDto notificacionDto = new NotificacionDto();
             notificacionDto.setId(notify.getId());
             //Obtener el ID del usuario (FK)
