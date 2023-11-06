@@ -2,7 +2,6 @@ package com.alberto.tienda.controller;
 
 import com.alberto.tienda.data.dto.RespuestaGenerica;
 import com.alberto.tienda.data.dto.UsuarioDto;
-import com.alberto.tienda.exceptions.BadRequestException;
 import com.alberto.tienda.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,12 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/usuario")
 @Validated
-public class UsuariosController {
+public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;

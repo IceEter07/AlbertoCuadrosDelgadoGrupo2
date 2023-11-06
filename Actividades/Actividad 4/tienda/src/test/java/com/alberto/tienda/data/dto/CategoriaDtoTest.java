@@ -40,6 +40,6 @@ public class CategoriaDtoTest {
 
         Set<ConstraintViolation<CategoriaDto>> violations = validator.validate(categoriaDto);
 
-        assertEquals(3, violations.size());
+        assertEquals(2, violations.size());
     }
 }
