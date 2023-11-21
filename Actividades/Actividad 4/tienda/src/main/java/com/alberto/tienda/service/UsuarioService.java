@@ -14,6 +14,7 @@ import com.alberto.tienda.utils.Constantes;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -30,6 +31,9 @@ public class UsuarioService {
 
     @Autowired
     RolRepository rolRepository;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     public RespuestaGenerica getUsuarios(){
         List<Usuario> users = usuarioRepository.findAll();
@@ -76,7 +80,7 @@ public class UsuarioService {
             respuesta.setMensaje(Constantes.MENSAJE_CONSULTA_EXITOSA);
         return respuesta;
     }
-    @Transactional
+
     public RespuestaGenerica guardarUsuario(@Valid UsuarioDto usuarioDto){
         RespuestaGenerica respuesta = new RespuestaGenerica();
         Usuario usuario = new Usuario();
@@ -85,7 +89,7 @@ public class UsuarioService {
         usuario.setApMat(usuarioDto.getApMat());
         usuario.setTelefono(usuarioDto.getTelefono());
         usuario.setEmail(usuarioDto.getEmail());
-        usuario.setPass(usuarioDto.getPass());
+        usuario.setPass(passwordEncoder.encode(usuarioDto.getPass()));
 
         //Comprobar que el usuario No este registrado.
         List<Usuario> findEmail = usuarioRepository.findByEmail(usuarioDto.getEmail());
