@@ -1,7 +1,10 @@
 package com.alberto.tienda.controller;
 
 import com.alberto.tienda.data.dto.CredencialesDto;
+import com.alberto.tienda.data.dto.RespuestaGenerica;
+import com.alberto.tienda.service.AutenticationService;
 import com.alberto.tienda.service.JwtService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -27,6 +30,9 @@ public class AuthController {
     @Autowired
     private final JwtService jwtService;
 
+    @Autowired
+    private AutenticationService autenticationService;
+
     //Constructor para inyectat JwtService
     public AuthController(JwtService jwtService) {
         this.jwtService = jwtService;
@@ -34,21 +40,17 @@ public class AuthController {
 
     //Petición para manejar el login
     @PostMapping("/auth/login")
-    public ResponseEntity<Map<String, String>> authenticate(@RequestBody CredencialesDto credencialesDto){
-
-        //Comprobar que las credenciales coincidan con las configuradas
-        if (configuredUsername.equals(credencialesDto.getUsuario()) && configuredPassword.equals(credencialesDto.getContrasena())){
-            //Genera el token JWT
-        String token = jwtService.generateToken(credencialesDto.getUsuario());
-
-        //Crea un mapa para la respuesta con el token JWT
-            Map<String, String> response = new HashMap<>();
-            response.put("access_token", token);
-
-            //Devuelve un HTTP OK con el token
-            return ResponseEntity.ok(response);
+    public ResponseEntity<RespuestaGenerica> authenticate(@Valid @RequestBody CredencialesDto credencialesDto){
+        RespuestaGenerica respuesta = autenticationService.getTokenUser(credencialesDto);
+        HttpStatus status = null;
+        if (respuesta.isExito()){
+            status = HttpStatus.OK;
+            respuesta.setCodigo(status.value());
         }
-        //Devuelve un HTTP 400 si las credencialas son erroneas
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        else{
+            status = HttpStatus.BAD_REQUEST;
+            respuesta.setCodigo(status.value());
+        }
+        return new ResponseEntity<>(respuesta, status);
     }
 }

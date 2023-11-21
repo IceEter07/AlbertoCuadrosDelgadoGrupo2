@@ -7,6 +7,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -26,7 +28,9 @@ public class SecurityConfig {
                 //Configura las reglas de autorización de solitudes HTTP
                 .authorizeHttpRequests(requests ->requests
                     //Permite todas las solicitudes a "auth/login" sin autenticación
+                    //Tambien permite que se registren los usuarios
                         .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers("/usuario/guardarUsuario").permitAll()
                         //Todas las demás solicitudes requieren autenticación
                         .anyRequest().authenticated()
                 )
@@ -42,5 +46,10 @@ public class SecurityConfig {
     public JwtTokenFilter jwtTokenFilter(@Value("${jwt.secret}") String secret){
         //Inyecta la clave secreta (definida en las propiedades de la aplicación) en el filtro JWT
         return new JwtTokenFilter(secret);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
     }
 }

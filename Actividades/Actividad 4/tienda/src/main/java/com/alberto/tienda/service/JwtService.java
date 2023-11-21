@@ -15,7 +15,7 @@ public class JwtService {
     private String secret;
 
     //Método para generar un token JWT para un nombre de usuario
-    public String generateToken(String username){
+    public String generateToken(String email){
         //Tiempo de expiración en milisegundos
         long expirationTimeInMilis = 3600000;
 
@@ -25,7 +25,7 @@ public class JwtService {
         //Contruir el token JWT
 
         return Jwts.builder()
-                .setSubject(username) //Establece el username como sujeto del token
+                .setSubject(email) //Establece el username como sujeto del token
                 .setIssuedAt(new Date()) //Hora de emisión del token
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTimeInMilis)) //Fecha de expiracion del token
                 .signWith(SignatureAlgorithm.HS512, secretKeyBytes) //Firma el token con el SHA-512 y la clave secreta
