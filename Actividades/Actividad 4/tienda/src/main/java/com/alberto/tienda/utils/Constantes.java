@@ -39,6 +39,7 @@ public class Constantes {
     //REGISTROS EXITOSOS GENERICOS
     public static final String MENSAJE_CAMPO_REGISTRADO_EXISTOSAMENTE = "El registro se realizo con exito.";
     public static final String MENSAJE_PETICION_EXITOSA = "La peticion fue realizada con exito";
+    public static final String MENSAJE_TOKEN_GENERADO = "El token fue generado con exito";
 
 
     //MENSAJES VARIADOS (CONSULTAS)
@@ -63,6 +64,8 @@ public class Constantes {
     public static final String MENSAJE_EXCEPCION_TIPO_PARAMETRO_INCORRECTO = "Ocurrió un error. La solicitud no se pudo completar porque el parametro ";
     public static final String MENSAJE_EXCEPCION_TIPO_PARAMETRO_INCORRECTO_COMPLEMENTO = " no es de tipo ";
     public static final String MENSAJE_EXCEPCION_BODY_INCORRECTO = "Ocurió un problema. La solicitud no se pudo completar porque el mensaje del cuerpo de la solicitud esta mal formado. Verifica la estructura del mensaje";
+
+    public static final String MENSAJE_EMAIL_PASS_INCORRECTOS = "El email y/o la contraseña son incorrectos";
 
 
 }
