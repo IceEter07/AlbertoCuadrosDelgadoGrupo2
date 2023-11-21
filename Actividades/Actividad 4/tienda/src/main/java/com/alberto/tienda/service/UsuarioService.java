@@ -4,6 +4,7 @@ import com.alberto.tienda.data.Rol;
 import com.alberto.tienda.data.Usuario;
 import com.alberto.tienda.data.UsuarioRol;
 import com.alberto.tienda.data.dto.RespuestaGenerica;
+import com.alberto.tienda.data.dto.UserInformation.EmailDto;
 import com.alberto.tienda.data.dto.UsuarioDto;
 import com.alberto.tienda.exceptions.BadRequestException;
 import com.alberto.tienda.exceptions.EntityNotFoundException;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UsuarioService {
@@ -119,6 +121,19 @@ public class UsuarioService {
         usuarioRol.setIdUsuario(usuario);
         usuarioRolRepository.save(usuarioRol);
 
+        return respuesta;
+    }
+
+    public RespuestaGenerica actualizarEmail(@Valid EmailDto emailDto){
+        RespuestaGenerica respuesta = new RespuestaGenerica();
+
+        Usuario findEmail = usuarioRepository.findById(emailDto.getId())
+                .orElseThrow(()-> new EntityNotFoundException(Constantes.MENSAJE_USUARIO_NO_EXISTENTE));
+
+        findEmail.setEmail(emailDto.getEmail());
+        usuarioRepository.save(findEmail);
+        respuesta.setExito(true);
+        respuesta.setMensaje(Constantes.MENSAJE_PETICION_EXITOSA);
         return respuesta;
     }
 }
