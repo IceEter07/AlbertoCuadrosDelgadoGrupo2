@@ -1,8 +1,8 @@
 En este archivo se adjunta información respecto a las consultas en la aplicación.
-Se incluirán los endpoints y un ejemplo de petición en cada uno de ellos.
+Se incluyen los endpoints y un ejemplo de petición en cada uno de ellos.
 Es importante resaltar que de momento solo hay dos endpoints que pueden ser accedidos por cualquier usuario (login y guardar usuario)
 
-Nota importante: se conservaron algunos endpoints en los que se obtiene toda la información de la tabla de la BD (Se dejarón solo para prácticar. Aunque en algunas se pretende que un usuario "admin" pueda administrarlas).
+Nota importante: se conservaron algunos endpoints en los que se obtiene toda la información de la tabla de la BD (ej: getAllUsers) con fines meramente prácticos.
 
 Nota importante: los métodos PUT fueron implementados como "pruebas" por lo que posiblemente no cumplan con el funcionamiento esperado.
 
