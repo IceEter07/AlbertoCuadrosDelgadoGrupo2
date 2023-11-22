@@ -41,7 +41,6 @@ public class Constantes {
     public static final String MENSAJE_PETICION_EXITOSA = "La peticion fue realizada con exito";
     public static final String MENSAJE_TOKEN_GENERADO = "El token fue generado con exito";
 
-
     //MENSAJES VARIADOS (CONSULTAS)
     public static final String MENSAJE_CANTIDAD_PRODUCTO_EXCESIVA = "No se pude validar la compra porque se excede el stock del producto con id ";
     public static final String MENSAJE_PEDIDO_SIN_HISTORIAL = "No existe ningún pedido en el historial del usuario";
