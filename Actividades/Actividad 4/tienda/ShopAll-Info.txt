@@ -1,12 +1,22 @@
 En este archivo se adjunta información respecto a las consultas en la aplicación.
-Se incluirán los endpoints y un ejemplo de petición en cada uno de ellos.
-Es importante resaltar que de momento los endpoints pueder ser accedidos por cualquier tipo de usuario.
+Se incluyen los endpoints y un ejemplo de petición en cada uno de ellos.
+Es importante resaltar que de momento solo hay dos endpoints que pueden ser accedidos por cualquier usuario (login y guardar usuario)
 
-Nota importante: se conservaron algunos endpoints en los que se obtiene toda la información de la tabla de la BD (Se dejarón solo para prácticar. Aunque en algunas se pretende que un usuario "admin" pueda administrarlas).
+Nota importante: se conservaron algunos endpoints en los que se obtiene toda la información de la tabla de la BD (ej: getAllUsers) con fines meramente prácticos.
+
+Nota importante: los métodos PUT fueron implementados como "pruebas" por lo que posiblemente no cumplan con el funcionamiento esperado.
 
 ***********Se recomienda visualizar el archivo en un IDE.*************
 
 Ruta general: http://localhost:8080
+
+0. Login: http://localhost:8080/auth/login
+
+    Ejemplo:
+    {
+        "email": "exampleemail@example.com"
+        "contrasena": "Hola1234."
+    }
 
 1. Usuarios: http://localhost:8080/usuario
 
@@ -27,6 +37,14 @@ Ruta general: http://localhost:8080
 		Ejemplo: http://localhost:8080/usuario/1
 
 	1.3 Obtener todos lo usuarios (GET): http://localhost:8080/usuario/obtenerUsuarios
+
+	1.4 Actualizar email del usuario (PUT):  http://localhost:8080/usuario/actualizarEmail
+
+	Ejemplo:
+	{
+        "id": 8,
+        "email": "hola9@gmail.com"
+    }
 
 
 2. Notificaciones: http://localhost:8080/notificacion

@@ -5,9 +5,11 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.validation.annotation.Validated;
 
 @Getter
 @Setter
+@Validated
 public class CategoriaDto {
     private Integer id;
     @NotBlank(message = "Debe ingresar el nombre de una categoría")

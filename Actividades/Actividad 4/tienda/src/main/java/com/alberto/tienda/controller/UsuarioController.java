@@ -1,6 +1,7 @@
 package com.alberto.tienda.controller;
 
 import com.alberto.tienda.data.dto.RespuestaGenerica;
+import com.alberto.tienda.data.dto.UserInformation.EmailDto;
 import com.alberto.tienda.data.dto.UsuarioDto;
 import com.alberto.tienda.service.UsuarioService;
 import jakarta.validation.Valid;
@@ -69,5 +70,18 @@ public class UsuarioController {
         return new ResponseEntity<>(respuestaGenerica, status);
     }
 
-
+    @PutMapping("/actualizarEmail")
+    public ResponseEntity<RespuestaGenerica> actualizarEmail(@Valid @RequestBody EmailDto emailDto){
+        RespuestaGenerica respuestaGenerica = usuarioService.actualizarEmail(emailDto);
+        HttpStatus status = null;
+        if (respuestaGenerica.isExito()){
+            status = HttpStatus.OK;
+            respuestaGenerica.setCodigo(status.value());
+        }
+        else {
+            status = HttpStatus.BAD_REQUEST;
+            respuestaGenerica.setCodigo(status.value());
+        }
+        return new ResponseEntity<>(respuestaGenerica, status);
+    }
 }
